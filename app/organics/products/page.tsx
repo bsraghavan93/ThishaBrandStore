@@ -1,0 +1,80 @@
+'use client'
+
+import { useMemo, useState } from 'react'
+import Navbar from '@/components/Navbar'
+import MarqueeBanner from '@/components/MarqueeBanner'
+import Footer from '@/components/Footer'
+import ProductCard from '@/components/ProductCard'
+import ProductModal from '@/components/ProductModal'
+import { useCartContext } from '@/lib/CartContext'
+import { organicsProducts } from '@/lib/seedData'
+import { Product } from '@/lib/types'
+
+const ACCENT = '#3B5E1F'
+
+export default function OrganicsProductsPage() {
+  const { addToCart, count, openCart } = useCartContext()
+  const [modalProduct, setModalProduct] = useState<Product | null>(null)
+  const [activeCategory, setActiveCategory] = useState('All')
+
+  const categories = useMemo(() => ['All', ...Array.from(new Set(organicsProducts.map(p => p.category)))], [])
+
+  const filtered = useMemo(
+    () => (activeCategory === 'All' ? organicsProducts : organicsProducts.filter(p => p.category === activeCategory)),
+    [activeCategory]
+  )
+
+  return (
+    <div className="bg-white">
+      <Navbar brand="organics" cartCount={count} onCartOpen={openCart} />
+      <MarqueeBanner brand="organics" />
+
+      {/* Header strip */}
+      <section className="px-6 py-16" style={{ background: 'linear-gradient(120deg, #e8f3dc, #f6faf1)' }}>
+        <div className="mx-auto max-w-7xl">
+          <p className="text-xs font-bold uppercase tracking-[3px]" style={{ color: ACCENT }}>✦ Thisha Organics ✦</p>
+          <h1 className="mt-2 font-serif text-5xl font-semibold text-gray-900">All Products</h1>
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-7xl px-6 py-14">
+        {/* Category filters */}
+        <div className="mb-10 flex flex-wrap gap-3">
+          {categories.map(cat => {
+            const active = cat === activeCategory
+            return (
+              <button
+                key={cat}
+                onClick={() => setActiveCategory(cat)}
+                className="rounded-full px-5 py-2 text-sm font-medium transition-all duration-200"
+                style={{
+                  backgroundColor: active ? ACCENT : '#fff',
+                  color: active ? '#fff' : '#666',
+                  boxShadow: active ? '0 6px 18px rgba(59,94,31,0.35)' : '0 2px 8px rgba(0,0,0,0.06)',
+                }}
+              >
+                {cat}
+              </button>
+            )
+          })}
+        </div>
+
+        <div className="grid gap-6" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(244px, 1fr))' }}>
+          {filtered.map((product, i) => (
+            <ProductCard
+              key={product.id}
+              product={product}
+              accent={ACCENT}
+              onAdd={addToCart}
+              onView={setModalProduct}
+              delay={i * 0.06}
+            />
+          ))}
+        </div>
+      </section>
+
+      <Footer brand="organics" />
+      <ProductModal product={modalProduct} accent={ACCENT} onClose={() => setModalProduct(null)} onAdd={addToCart} />
+    </div>
+  )
+}
