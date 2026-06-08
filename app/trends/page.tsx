@@ -9,6 +9,7 @@ import Footer from '@/components/Footer'
 import ProductCard from '@/components/ProductCard'
 import ProductModal from '@/components/ProductModal'
 import { useReveal } from '@/hooks/useReveal'
+import { useProducts } from '@/hooks/useProducts'
 import { useCartContext } from '@/lib/CartContext'
 import { trendsProducts } from '@/lib/seedData'
 import { Product } from '@/lib/types'
@@ -42,6 +43,7 @@ function CollectionCard({ name, emoji, bg, delay }: { name: string; emoji: strin
 
 export default function TrendsHome() {
   const { addToCart, count, openCart } = useCartContext()
+  const { products } = useProducts('trends')
   const [modalProduct, setModalProduct] = useState<Product | null>(null)
 
   return (
@@ -111,7 +113,7 @@ export default function TrendsHome() {
           <h2 className="mt-2 font-serif text-4xl font-semibold text-gray-900">New Arrivals</h2>
         </div>
         <div className="grid gap-6" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))' }}>
-          {trendsProducts.map((product, i) => (
+          {products.map((product, i) => (
             <ProductCard
               key={product.id}
               product={product}

@@ -6,22 +6,23 @@ import MarqueeBanner from '@/components/MarqueeBanner'
 import Footer from '@/components/Footer'
 import ProductCard from '@/components/ProductCard'
 import ProductModal from '@/components/ProductModal'
+import { useProducts } from '@/hooks/useProducts'
 import { useCartContext } from '@/lib/CartContext'
-import { trendsProducts } from '@/lib/seedData'
 import { Product } from '@/lib/types'
 
 const ACCENT = '#C2185B'
 
 export default function TrendsProductsPage() {
   const { addToCart, count, openCart } = useCartContext()
+  const { products } = useProducts('trends')
   const [modalProduct, setModalProduct] = useState<Product | null>(null)
   const [activeCategory, setActiveCategory] = useState('All')
 
-  const categories = useMemo(() => ['All', ...Array.from(new Set(trendsProducts.map(p => p.category)))], [])
+  const categories = useMemo(() => ['All', ...Array.from(new Set(products.map(p => p.category)))], [products])
 
   const filtered = useMemo(
-    () => (activeCategory === 'All' ? trendsProducts : trendsProducts.filter(p => p.category === activeCategory)),
-    [activeCategory]
+    () => (activeCategory === 'All' ? products : products.filter(p => p.category === activeCategory)),
+    [products, activeCategory]
   )
 
   return (

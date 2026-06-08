@@ -9,6 +9,7 @@ import Footer from '@/components/Footer'
 import ProductCard from '@/components/ProductCard'
 import ProductModal from '@/components/ProductModal'
 import { useReveal } from '@/hooks/useReveal'
+import { useProducts } from '@/hooks/useProducts'
 import { useCartContext } from '@/lib/CartContext'
 import { organicsProducts } from '@/lib/seedData'
 import { Product } from '@/lib/types'
@@ -45,6 +46,7 @@ function ValueCard({ icon, title, delay }: { icon: string; title: string; delay:
 
 export default function OrganicsHome() {
   const { addToCart, count, openCart } = useCartContext()
+  const { products } = useProducts('organics')
   const [modalProduct, setModalProduct] = useState<Product | null>(null)
   const [valuesRef, valuesVisible] = useReveal()
   const [testimonialRef, testimonialVisible] = useReveal()
@@ -114,7 +116,7 @@ export default function OrganicsHome() {
           <h2 className="mt-2 font-serif text-4xl font-semibold text-gray-900">Our Bestsellers</h2>
         </div>
         <div className="grid gap-6" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))' }}>
-          {organicsProducts.map((product, i) => (
+          {products.map((product, i) => (
             <ProductCard
               key={product.id}
               product={product}
