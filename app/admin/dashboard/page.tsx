@@ -30,6 +30,7 @@ export default function AdminDashboardPage() {
   const [showForm, setShowForm] = useState(false)
   const [form, setForm] = useState(EMPTY_FORM)
   const [saving, setSaving] = useState(false)
+  const [formError, setFormError] = useState('')
 
   // Auth check
   useEffect(() => {
@@ -107,6 +108,7 @@ export default function AdminDashboardPage() {
     if (!form.name || !form.price || !form.category) return
 
     setSaving(true)
+    setFormError('')
     try {
       const headers = await authHeaders()
       const res = await fetch('/api/products', {
@@ -127,6 +129,8 @@ export default function AdminDashboardPage() {
         setProducts(prev => [json.product, ...prev])
         setForm(EMPTY_FORM)
         setShowForm(false)
+      } else {
+        setFormError(json.error || 'Failed to save product')
       }
     } finally {
       setSaving(false)
@@ -143,6 +147,8 @@ export default function AdminDashboardPage() {
     const json = await res.json()
     if (json.product) {
       setProducts(prev => prev.map(p => (p.id === product.id ? json.product : p)))
+    } else {
+      alert(json.error || 'Failed to update product')
     }
   }
 
@@ -151,6 +157,9 @@ export default function AdminDashboardPage() {
     const res = await fetch(`/api/products?id=${product.id}`, { method: 'DELETE', headers })
     if (res.ok) {
       setProducts(prev => prev.filter(p => p.id !== product.id))
+    } else {
+      const json = await res.json().catch(() => ({}))
+      alert(json.error || 'Failed to remove product')
     }
   }
 
@@ -260,6 +269,7 @@ export default function AdminDashboardPage() {
               <span className="text-xs font-medium text-gray-600">Description</span>
               <textarea rows={3} value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} className="dash-input resize-none" />
             </label>
+            {formError && <p className="text-sm text-red-500 sm:col-span-2">{formError}</p>}
             <div className="flex gap-3 sm:col-span-2">
               <button type="submit" disabled={saving} className="rounded-full px-6 py-2.5 text-sm font-semibold text-white" style={{ backgroundColor: '#3B5E1F' }}>
                 {saving ? 'Saving…' : 'Save'}
