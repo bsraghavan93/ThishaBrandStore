@@ -10,7 +10,7 @@ const config: Config = {
     extend: {
       colors: {
         organics: '#3B5E1F',
-        trends: '#C2185B',
+        trends: '#8B1539',
       },
       fontFamily: {
         serif: ['"Cormorant Garamond"', 'serif'],

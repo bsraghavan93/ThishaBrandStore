@@ -14,14 +14,14 @@ import { useCartContext } from '@/lib/CartContext'
 import { trendsProducts } from '@/lib/seedData'
 import { Product } from '@/lib/types'
 
-const ACCENT = '#C2185B'
+const ACCENT = '#8B1539'
 
 const HERO_IMAGES = trendsProducts.slice(0, 4).map(p => p.images[0])
 
 const COLLECTIONS = [
-  { name: 'Summer Bloom', emoji: '🌸', bg: '#FFF1F6' },
-  { name: 'Power Dressing', emoji: '💼', bg: '#F3E9F4' },
-  { name: 'Weekend Luxe', emoji: '✨', bg: '#FCE4EC' },
+  { name: 'Summer Bloom', emoji: '🌸', bg: '#FFF5F0' },
+  { name: 'Power Dressing', emoji: '💼', bg: '#F5EDE0' },
+  { name: 'Weekend Luxe', emoji: '✨', bg: '#FDF0F4' },
 ]
 
 function CollectionCard({ name, emoji, bg, delay }: { name: string; emoji: string; bg: string; delay: number }) {
@@ -54,17 +54,17 @@ export default function TrendsHome() {
       {/* Hero */}
       <section
         className="relative overflow-hidden px-6 py-24"
-        style={{ background: 'linear-gradient(135deg, #560027, #880e4f, #C2185B, #e91e8c)' }}
+        style={{ background: 'linear-gradient(135deg, #3D0A1B, #6B1230, #8B1539, #C8963E)' }}
       >
         <div className="pointer-events-none absolute inset-0" style={{ background: 'radial-gradient(circle at 70% 50%, rgba(255,255,255,0.18), transparent 60%)' }} />
         <div className="animate-orbFloat pointer-events-none absolute -left-24 bottom-0 h-96 w-96 rounded-full blur-[100px]" style={{ backgroundColor: 'rgba(255,255,255,0.1)' }} />
-        <div className="animate-orbFloat pointer-events-none absolute -right-20 top-0 h-80 w-80 rounded-full blur-[90px]" style={{ backgroundColor: 'rgba(255,192,213,0.18)', animationDelay: '6s' }} />
+        <div className="animate-orbFloat pointer-events-none absolute -right-20 top-0 h-80 w-80 rounded-full blur-[90px]" style={{ backgroundColor: 'rgba(200,150,62,0.18)', animationDelay: '6s' }} />
 
         <div className="relative z-10 mx-auto grid max-w-7xl grid-cols-1 items-center gap-12 lg:grid-cols-2">
           <div className="animate-fadeUp">
             <h1 className="font-display text-5xl font-black leading-[1.05] text-white md:text-6xl">
               Dress the <br />
-              <span className="italic" style={{ color: '#ffc0d5' }}>Woman</span> <br />
+              <span className="italic" style={{ color: '#C8963E' }}>Woman</span> <br />
               You Are
             </h1>
             <p className="mt-5 max-w-md text-[15px] leading-relaxed text-white/80">
@@ -127,7 +127,7 @@ export default function TrendsHome() {
       </section>
 
       {/* Collections teaser */}
-      <section className="px-6 py-24" style={{ backgroundColor: '#FCE4EC' }}>
+      <section className="px-6 py-24" style={{ backgroundColor: '#FDF0F4' }}>
         <div className="mx-auto max-w-7xl">
           <div className="mb-10 text-center">
             <p className="text-xs font-bold uppercase tracking-[3px]" style={{ color: ACCENT }}>✦ Curated for you ✦</p>

@@ -10,7 +10,7 @@ function buildEmailHtml(order: Order) {
         <tr>
           <td style="padding:8px 12px;border-bottom:1px solid #eee;">${item.name}</td>
           <td style="padding:8px 12px;border-bottom:1px solid #eee;text-align:center;">×${item.qty}</td>
-          <td style="padding:8px 12px;border-bottom:1px solid #eee;text-align:right;">$${(item.price * item.qty).toFixed(2)}</td>
+          <td style="padding:8px 12px;border-bottom:1px solid #eee;text-align:right;">₹${(item.price * item.qty).toFixed(2)}</td>
         </tr>`
     )
     .join('')
@@ -32,7 +32,7 @@ function buildEmailHtml(order: Order) {
         </thead>
         <tbody>${rows}</tbody>
       </table>
-      <p style="margin-top:16px;font-size:18px;"><strong>💰 Total: $${order.total.toFixed(2)}</strong></p>
+      <p style="margin-top:16px;font-size:18px;"><strong>💰 Total: ₹${order.total.toFixed(2)}</strong></p>
       <p><strong>Notes:</strong> ${order.notes || '—'}</p>
     </div>
   `

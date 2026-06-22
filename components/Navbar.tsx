@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { Brand } from '@/lib/types'
 import BrandSwitcher from './BrandSwitcher'
 
@@ -38,7 +39,7 @@ export default function Navbar({ brand, cartCount, onCartOpen }: NavbarProps) {
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
-  const accent = brand === 'organics' ? '#3B5E1F' : '#C2185B'
+  const accent = brand === 'organics' ? '#3B5E1F' : '#8B1539'
   const links = brand === 'organics' ? ORGANICS_LINKS : TRENDS_LINKS
   const brandName = brand === 'organics' ? 'Thisha Organics' : 'Thisha Trends'
   const tagline = brand === 'organics' ? 'pure · natural · honest' : 'bold · modern · you'
@@ -57,12 +58,22 @@ export default function Navbar({ brand, cartCount, onCartOpen }: NavbarProps) {
       <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
         {/* Left: logo */}
         <Link href={`/${brand}`} className="flex items-center gap-3">
-          <span
-            className="flex h-10 w-10 items-center justify-center rounded-full text-lg"
-            style={{ backgroundColor: accent, color: '#fff' }}
-          >
-            {emoji}
-          </span>
+          {brand === 'trends' ? (
+            <Image
+              src="/thisha-trends-logo.png"
+              alt="Thisha Trends"
+              width={44}
+              height={44}
+              className="rounded-full object-cover"
+            />
+          ) : (
+            <span
+              className="flex h-10 w-10 items-center justify-center rounded-full text-lg"
+              style={{ backgroundColor: accent, color: '#fff' }}
+            >
+              {emoji}
+            </span>
+          )}
           <div className="leading-tight">
             <div className="font-serif text-xl font-semibold" style={{ color: scrolled ? '#111' : '#fff' }}>
               {brandName}

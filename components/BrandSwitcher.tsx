@@ -8,7 +8,7 @@ export default function BrandSwitcher({ active }: { active: Brand }) {
 
   const brands: { key: Brand; label: string; color: string; href: string }[] = [
     { key: 'organics', label: '🌿 Organics', color: '#3B5E1F', href: '/organics' },
-    { key: 'trends', label: '🦋 Trends', color: '#C2185B', href: '/trends' },
+    { key: 'trends', label: '🦋 Trends', color: '#8B1539', href: '/trends' },
   ]
 
   return (

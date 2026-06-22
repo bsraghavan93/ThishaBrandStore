@@ -9,7 +9,7 @@ export default function CartPage() {
   const { cart, total, updateQty, removeFromCart } = useCartContext()
   const router = useRouter()
 
-  const accent = cart[0]?.brand === 'trends' ? '#C2185B' : '#3B5E1F'
+  const accent = cart[0]?.brand === 'trends' ? '#8B1539' : '#3B5E1F'
 
   return (
     <div className="min-h-screen bg-gray-50 px-6 py-12">
@@ -37,7 +37,7 @@ export default function CartPage() {
                     <div className="flex items-start justify-between">
                       <div>
                         <h3 className="font-serif text-lg font-bold text-gray-900">{item.name}</h3>
-                        <p className="text-sm text-gray-400">${item.price.toFixed(2)} each</p>
+                        <p className="text-sm text-gray-400">₹{item.price.toFixed(2)} each</p>
                       </div>
                       <button onClick={() => removeFromCart(item.id)} className="text-gray-300 hover:text-red-500" aria-label={`Remove ${item.name}`}>🗑</button>
                     </div>
@@ -47,7 +47,7 @@ export default function CartPage() {
                         <span className="w-6 text-center font-medium">{item.qty}</span>
                         <button onClick={() => updateQty(item.id, item.qty + 1)} className="flex h-8 w-8 items-center justify-center rounded-full border border-gray-200 hover:bg-gray-50">+</button>
                       </div>
-                      <span className="font-semibold text-gray-900">${(item.price * item.qty).toFixed(2)}</span>
+                      <span className="font-semibold text-gray-900">₹{(item.price * item.qty).toFixed(2)}</span>
                     </div>
                   </div>
                 </li>
@@ -58,7 +58,7 @@ export default function CartPage() {
               <h3 className="font-serif text-xl font-bold text-gray-900">Order Summary</h3>
               <div className="mt-4 flex items-center justify-between text-sm text-gray-500">
                 <span>Subtotal</span>
-                <span className="font-semibold text-gray-900">${total.toFixed(2)}</span>
+                <span className="font-semibold text-gray-900">₹{total.toFixed(2)}</span>
               </div>
               <div className="mt-1 flex items-center justify-between text-sm text-gray-400">
                 <span>Shipping</span>
@@ -66,7 +66,7 @@ export default function CartPage() {
               </div>
               <div className="mt-4 flex items-center justify-between border-t border-gray-100 pt-4">
                 <span className="font-semibold text-gray-900">Total</span>
-                <span className="font-serif text-2xl font-bold" style={{ color: accent }}>${total.toFixed(2)}</span>
+                <span className="font-serif text-2xl font-bold" style={{ color: accent }}>₹{total.toFixed(2)}</span>
               </div>
               <Link
                 href="/checkout"

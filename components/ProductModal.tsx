@@ -85,7 +85,7 @@ export default function ProductModal({ product, accent, onClose, onAdd }: Produc
             {product.category}
           </div>
           <h2 className="mt-2 font-serif text-[32px] font-bold leading-tight text-gray-900">{product.name}</h2>
-          <div className="mt-3 font-serif text-2xl font-bold text-gray-900">${product.price.toFixed(2)}</div>
+          <div className="mt-3 font-serif text-2xl font-bold text-gray-900">₹{product.price.toFixed(2)}</div>
           <p className="mt-4 text-[15px] leading-relaxed text-gray-500">{product.description}</p>
 
           <div className="mt-auto pt-6">

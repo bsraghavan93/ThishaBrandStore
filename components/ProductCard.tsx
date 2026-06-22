@@ -52,7 +52,7 @@ export default function ProductCard({ product, accent, onAdd, onView, delay = 0 
         <p className="mt-1 text-[13px] leading-snug text-gray-500">{truncate(product.description)}</p>
 
         <div className="mt-2 flex items-center justify-between">
-          <span className="font-serif text-[19px] font-bold text-gray-900">${product.price.toFixed(2)}</span>
+          <span className="font-serif text-[19px] font-bold text-gray-900">₹{product.price.toFixed(2)}</span>
         </div>
 
         <button

@@ -15,7 +15,7 @@ export default function LandingPage() {
       />
       <div
         className="animate-orbFloat pointer-events-none absolute -bottom-40 -right-32 h-[460px] w-[460px] rounded-full blur-[110px]"
-        style={{ backgroundColor: 'rgba(194,24,91,0.15)', animationDelay: '4s' }}
+        style={{ backgroundColor: 'rgba(139,21,57,0.15)', animationDelay: '4s' }}
       />
 
       <div className="relative z-10 flex flex-col items-center text-center">
@@ -56,9 +56,9 @@ export default function LandingPage() {
             className="group relative flex flex-col items-center justify-center gap-3 overflow-hidden rounded-3xl border border-white/10 px-8 py-16 transition-all duration-300 hover:-translate-y-2 hover:scale-[1.02]"
             style={{ backgroundColor: 'rgba(255,255,255,0.02)' }}
             onMouseEnter={e => {
-              e.currentTarget.style.background = 'linear-gradient(160deg, rgba(194,24,91,0.25), rgba(194,24,91,0.04))'
-              e.currentTarget.style.boxShadow = '0 20px 60px rgba(194,24,91,0.35)'
-              e.currentTarget.style.borderColor = 'rgba(255,192,213,0.4)'
+              e.currentTarget.style.background = 'linear-gradient(160deg, rgba(139,21,57,0.25), rgba(139,21,57,0.04))'
+              e.currentTarget.style.boxShadow = '0 20px 60px rgba(139,21,57,0.35)'
+              e.currentTarget.style.borderColor = 'rgba(200,150,62,0.4)'
             }}
             onMouseLeave={e => {
               e.currentTarget.style.background = 'rgba(255,255,255,0.02)'

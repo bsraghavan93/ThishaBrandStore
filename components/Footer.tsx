@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { Brand } from '@/lib/types'
 
 export default function Footer({ brand }: { brand: Brand }) {
-  const accent = brand === 'organics' ? '#3B5E1F' : '#C2185B'
+  const accent = brand === 'organics' ? '#3B5E1F' : '#8B1539'
   const name = brand === 'organics' ? 'Thisha Organics' : 'Thisha Trends'
 
   return (

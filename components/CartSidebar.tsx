@@ -18,7 +18,7 @@ export default function CartSidebar({ open, onClose, cart, total, updateQty, rem
 
   if (!open) return null
 
-  const accent = cart[0]?.brand === 'trends' ? '#C2185B' : '#3B5E1F'
+  const accent = cart[0]?.brand === 'trends' ? '#8B1539' : '#3B5E1F'
 
   const goToCheckout = () => {
     onClose()
@@ -61,7 +61,7 @@ export default function CartSidebar({ open, onClose, cart, total, updateQty, rem
                     <div className="flex items-start justify-between gap-2">
                       <div>
                         <h4 className="font-serif text-sm font-bold leading-tight text-gray-900">{item.name}</h4>
-                        <p className="text-xs text-gray-400">${item.price.toFixed(2)} each</p>
+                        <p className="text-xs text-gray-400">₹{item.price.toFixed(2)} each</p>
                       </div>
                       <button
                         onClick={() => removeFromCart(item.id)}
@@ -87,7 +87,7 @@ export default function CartSidebar({ open, onClose, cart, total, updateQty, rem
                           +
                         </button>
                       </div>
-                      <span className="text-sm font-semibold text-gray-900">${(item.price * item.qty).toFixed(2)}</span>
+                      <span className="text-sm font-semibold text-gray-900">₹{(item.price * item.qty).toFixed(2)}</span>
                     </div>
                   </div>
                 </li>
@@ -101,7 +101,7 @@ export default function CartSidebar({ open, onClose, cart, total, updateQty, rem
           <div className="border-t border-gray-100 px-6 py-5">
             <div className="mb-4 flex items-center justify-between">
               <span className="text-sm font-medium text-gray-500">Subtotal</span>
-              <span className="font-serif text-xl font-bold text-gray-900">${total.toFixed(2)}</span>
+              <span className="font-serif text-xl font-bold text-gray-900">₹{total.toFixed(2)}</span>
             </div>
             <button
               onClick={goToCheckout}

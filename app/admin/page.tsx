@@ -39,7 +39,7 @@ export default function AdminLoginPage() {
       style={{ background: 'linear-gradient(160deg, #0a0a0a, #1a1a2e, #16213e)' }}
     >
       <div className="animate-orbFloat pointer-events-none absolute -left-32 -top-32 h-96 w-96 rounded-full blur-[100px]" style={{ backgroundColor: 'rgba(59,94,31,0.22)' }} />
-      <div className="animate-orbFloat pointer-events-none absolute -bottom-40 -right-32 h-[28rem] w-[28rem] rounded-full blur-[110px]" style={{ backgroundColor: 'rgba(194,24,91,0.2)', animationDelay: '5s' }} />
+      <div className="animate-orbFloat pointer-events-none absolute -bottom-40 -right-32 h-[28rem] w-[28rem] rounded-full blur-[110px]" style={{ backgroundColor: 'rgba(139,21,57,0.2)', animationDelay: '5s' }} />
 
       <Link href="/" className="absolute left-6 top-6 z-10 text-sm text-gray-400 hover:text-white">← Back to Thisha</Link>
 
@@ -49,7 +49,7 @@ export default function AdminLoginPage() {
       >
         <div
           className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl text-2xl text-white"
-          style={{ background: 'linear-gradient(135deg, #3B5E1F, #C2185B)' }}
+          style={{ background: 'linear-gradient(135deg, #3B5E1F, #8B1539)' }}
         >
           🔒
         </div>

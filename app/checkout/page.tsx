@@ -28,7 +28,7 @@ export default function CheckoutPage() {
   const [loading, setLoading] = useState(false)
   const [placedOrder, setPlacedOrder] = useState<{ name: string; phone: string } | null>(null)
 
-  const accent = cart[0]?.brand === 'trends' ? '#C2185B' : '#3B5E1F'
+  const accent = cart[0]?.brand === 'trends' ? '#8B1539' : '#3B5E1F'
 
   const update = (key: keyof FormState) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setForm(f => ({ ...f, [key]: e.target.value }))
@@ -45,7 +45,7 @@ export default function CheckoutPage() {
 
   const buildWhatsAppMessage = () => {
     const itemLines = cart
-      .map(item => `• ${item.name} ×${item.qty}  $${(item.price * item.qty).toFixed(2)}`)
+      .map(item => `• ${item.name} ×${item.qty}  ₹${(item.price * item.qty).toFixed(2)}`)
       .join('\n')
 
     return `🛍️ New Thisha Order!
@@ -58,7 +58,7 @@ Address: ${form.address}, ${form.city}
 Order:
 ${itemLines}
 
-💰 Total: $${total.toFixed(2)}
+💰 Total: ₹${total.toFixed(2)}
 
 Notes: ${form.notes || '—'}`
   }
@@ -193,14 +193,14 @@ Notes: ${form.notes || '—'}`
                       <p className="text-sm font-medium text-gray-900">{item.name}</p>
                       <p className="text-xs text-gray-400">Qty {item.qty}</p>
                     </div>
-                    <span className="text-sm font-semibold text-gray-900">${(item.price * item.qty).toFixed(2)}</span>
+                    <span className="text-sm font-semibold text-gray-900">₹{(item.price * item.qty).toFixed(2)}</span>
                   </li>
                 ))}
               </ul>
             )}
             <div className="mt-5 flex items-center justify-between border-t border-gray-100 pt-4">
               <span className="font-semibold text-gray-900">Total</span>
-              <span className="font-serif text-2xl font-bold" style={{ color: accent }}>${total.toFixed(2)}</span>
+              <span className="font-serif text-2xl font-bold" style={{ color: accent }}>₹{total.toFixed(2)}</span>
             </div>
           </div>
         </div>

@@ -39,13 +39,13 @@ export default function AdminTable({ products, onToggleStock, onRemove }: AdminT
               <td className="px-5 py-4">
                 <span
                   className="rounded-full px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-white"
-                  style={{ backgroundColor: product.brand === 'organics' ? '#3B5E1F' : '#C2185B' }}
+                  style={{ backgroundColor: product.brand === 'organics' ? '#3B5E1F' : '#8B1539' }}
                 >
                   {product.brand}
                 </span>
               </td>
               <td className="px-5 py-4 text-gray-600">{product.category}</td>
-              <td className="px-5 py-4 font-semibold text-gray-900">${product.price.toFixed(2)}</td>
+              <td className="px-5 py-4 font-semibold text-gray-900">₹{product.price.toFixed(2)}</td>
               <td className="px-5 py-4">
                 <span
                   className={`rounded-full px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide ${

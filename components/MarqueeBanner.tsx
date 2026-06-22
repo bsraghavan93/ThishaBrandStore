@@ -2,13 +2,13 @@
 
 import { Brand } from '@/lib/types'
 
-const ORGANICS_ITEMS = ['🌿 100% NATURAL INGREDIENTS', 'CRUELTY FREE', 'FREE SHIPPING OVER $50', 'CLEAN BEAUTY, HONEST PRICES']
+const ORGANICS_ITEMS = ['🌿 100% NATURAL INGREDIENTS', 'CRUELTY FREE', 'FREE SHIPPING OVER ₹500', 'CLEAN BEAUTY, HONEST PRICES']
 const TRENDS_ITEMS = ['🦋 NEW DROPS WEEKLY', 'FREE RETURNS', 'FAST SHIPPING', 'DRESS THE WOMAN YOU ARE']
 
 export default function MarqueeBanner({ brand }: { brand: Brand }) {
   const items = brand === 'organics' ? ORGANICS_ITEMS : TRENDS_ITEMS
-  const bg = brand === 'organics' ? '#3B5E1F' : '#C2185B'
-  const color = brand === 'organics' ? '#c8e6b0' : '#ffc0d5'
+  const bg = brand === 'organics' ? '#3B5E1F' : '#8B1539'
+  const color = brand === 'organics' ? '#c8e6b0' : '#E8C89A'
 
   const repeated = Array(4).fill(items).flat().join(' ✦ ')
 

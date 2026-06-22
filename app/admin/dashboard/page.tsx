@@ -183,7 +183,7 @@ export default function AdminDashboardPage() {
         <div className="flex items-center gap-3">
           <span
             className="flex h-9 w-9 items-center justify-center rounded-xl text-lg text-white"
-            style={{ background: 'linear-gradient(135deg, #3B5E1F, #C2185B)' }}
+            style={{ background: 'linear-gradient(135deg, #3B5E1F, #8B1539)' }}
           >
             ✦
           </span>
