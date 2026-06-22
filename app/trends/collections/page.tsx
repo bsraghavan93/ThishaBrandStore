@@ -6,36 +6,41 @@ import Navbar from '@/components/Navbar'
 import MarqueeBanner from '@/components/MarqueeBanner'
 import Footer from '@/components/Footer'
 import { useReveal } from '@/hooks/useReveal'
+import { useProducts } from '@/hooks/useProducts'
 import { useCartContext } from '@/lib/CartContext'
-import { trendsProducts } from '@/lib/seedData'
 
 const ACCENT = '#8B1539'
 
-const COLLECTIONS = [
+const COLLECTION_META = [
   {
     name: 'Summer Bloom',
     emoji: '🌸',
     panelBg: '#FFF5F0',
     description: 'Light fabrics, floral prints, and breezy silhouettes built for golden-hour days and warm nights out.',
-    image: trendsProducts[0].images[0],
   },
   {
     name: 'Power Dressing',
     emoji: '💼',
     panelBg: '#F5EDE0',
     description: 'Structured blazers and wide-leg trousers that command the room — confidence, tailored.',
-    image: trendsProducts[3].images[0],
   },
   {
     name: 'Weekend Luxe',
     emoji: '✨',
     panelBg: '#FDF0F4',
     description: 'Cosy knits and elevated basics for slow mornings, brunch dates, and everything in between.',
-    image: trendsProducts[5].images[0],
   },
 ]
 
-function CollectionRow({ collection, index }: { collection: typeof COLLECTIONS[number]; index: number }) {
+interface CollectionData {
+  name: string
+  emoji: string
+  panelBg: string
+  description: string
+  image?: string
+}
+
+function CollectionRow({ collection, index }: { collection: CollectionData; index: number }) {
   const [ref, visible] = useReveal()
   const flipped = index % 2 === 1
 
@@ -45,8 +50,10 @@ function CollectionRow({ collection, index }: { collection: typeof COLLECTIONS[n
       className={`grid grid-cols-1 overflow-hidden rounded-3xl md:grid-cols-2 ${visible ? 'animate-fadeUp' : 'opacity-0'}`}
       style={{ animationDelay: visible ? `${index * 0.12}s` : undefined, boxShadow: '0 8px 32px rgba(0,0,0,0.08)' }}
     >
-      <div className={`relative h-72 md:h-auto ${flipped ? 'md:order-2' : ''}`}>
-        <Image src={collection.image} alt={collection.name} fill unoptimized className="object-cover" sizes="(max-width: 768px) 100vw, 50vw" />
+      <div className={`relative h-72 md:h-auto ${flipped ? 'md:order-2' : ''}`} style={{ backgroundColor: '#e5e5e5' }}>
+        {collection.image && (
+          <Image src={collection.image} alt={collection.name} fill unoptimized className="object-cover" sizes="(max-width: 768px) 100vw, 50vw" />
+        )}
       </div>
       <div
         className={`flex flex-col justify-center gap-4 px-10 py-14 ${flipped ? 'md:order-1' : ''}`}
@@ -69,6 +76,12 @@ function CollectionRow({ collection, index }: { collection: typeof COLLECTIONS[n
 
 export default function TrendsCollectionsPage() {
   const { count, openCart } = useCartContext()
+  const { products } = useProducts('trends')
+
+  const collections: CollectionData[] = COLLECTION_META.map((meta, i) => ({
+    ...meta,
+    image: products[i]?.images[0],
+  }))
 
   return (
     <div className="bg-white">
@@ -83,7 +96,7 @@ export default function TrendsCollectionsPage() {
       </section>
 
       <section className="mx-auto flex max-w-7xl flex-col gap-10 px-6 py-16">
-        {COLLECTIONS.map((c, i) => (
+        {collections.map((c, i) => (
           <CollectionRow key={c.name} collection={c} index={i} />
         ))}
       </section>

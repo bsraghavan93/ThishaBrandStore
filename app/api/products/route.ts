@@ -1,13 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
-import { allProducts } from '@/lib/seedData'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
-/** Builds a request-scoped Supabase client that carries the caller's access
- * token, so RLS policies see `auth.role() = 'authenticated'` and `auth.uid()`. */
 function authedClient(token: string) {
   if (!supabaseUrl || !supabaseAnonKey) return null
   return createClient(supabaseUrl, supabaseAnonKey, {
@@ -29,15 +26,24 @@ async function requireUser(req: NextRequest) {
   return { user, client }
 }
 
+function extractStoragePaths(images: string[]): string[] {
+  return images
+    .map(url => {
+      const match = url.match(/\/storage\/v1\/object\/public\/product-images\/(.+)/)
+      return match ? match[1] : null
+    })
+    .filter((p): p is string => p !== null)
+}
+
 export async function GET() {
   if (!supabase) {
-    return NextResponse.json({ products: allProducts, source: 'seed' })
+    return NextResponse.json({ products: [], source: 'unconfigured' })
   }
 
   const { data, error } = await supabase.from('products').select('*').order('created_at', { ascending: false })
 
   if (error) {
-    return NextResponse.json({ products: allProducts, source: 'seed', error: error.message })
+    return NextResponse.json({ products: [], error: error.message })
   }
 
   return NextResponse.json({ products: data, source: 'supabase' })
@@ -74,6 +80,15 @@ export async function DELETE(req: NextRequest) {
   const { searchParams } = new URL(req.url)
   const id = searchParams.get('id')
   if (!id) return NextResponse.json({ error: 'Missing product id' }, { status: 400 })
+
+  const { data: product } = await auth.client.from('products').select('images').eq('id', id).single()
+
+  if (product?.images?.length) {
+    const paths = extractStoragePaths(product.images)
+    if (paths.length) {
+      await auth.client.storage.from('product-images').remove(paths)
+    }
+  }
 
   const { error } = await auth.client.from('products').delete().eq('id', id)
   if (error) return NextResponse.json({ error: error.message }, { status: 400 })

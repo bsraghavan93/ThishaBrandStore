@@ -1,38 +1,54 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 import type { Session } from '@supabase/supabase-js'
 import { supabase, isSupabaseConfigured } from '@/lib/supabase'
-import { allProducts as seedProducts } from '@/lib/seedData'
 import { Brand, Product } from '@/lib/types'
 import AdminTable from '@/components/AdminTable'
 
 type Tab = 'all' | Brand
+type FormMode = 'add' | 'edit' | null
 
-const EMPTY_FORM = {
+interface ProductForm {
+  name: string
+  price: string
+  category: string
+  newCategory: string
+  brand: Brand
+  description: string
+}
+
+const EMPTY_FORM: ProductForm = {
   name: '',
   price: '',
   category: '',
-  brand: 'organics' as Brand,
+  newCategory: '',
+  brand: 'organics',
   description: '',
-  image_url: '',
 }
 
 export default function AdminDashboardPage() {
   const router = useRouter()
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const [session, setSession] = useState<Session | null>(null)
   const [checkingAuth, setCheckingAuth] = useState(true)
 
   const [products, setProducts] = useState<Product[]>([])
   const [loadingProducts, setLoadingProducts] = useState(true)
   const [tab, setTab] = useState<Tab>('all')
-  const [showForm, setShowForm] = useState(false)
-  const [form, setForm] = useState(EMPTY_FORM)
+
+  const [formMode, setFormMode] = useState<FormMode>(null)
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [form, setForm] = useState<ProductForm>(EMPTY_FORM)
   const [saving, setSaving] = useState(false)
   const [formError, setFormError] = useState('')
 
-  // Auth check
+  const [imageFiles, setImageFiles] = useState<File[]>([])
+  const [existingImages, setExistingImages] = useState<string[]>([])
+  const [removedImages, setRemovedImages] = useState<string[]>([])
+
   useEffect(() => {
     if (!isSupabaseConfigured || !supabase) {
       router.push('/admin')
@@ -56,7 +72,6 @@ export default function AdminDashboardPage() {
     return () => listener.subscription.unsubscribe()
   }, [router])
 
-  // Load products
   useEffect(() => {
     if (!session) return
     let cancelled = false
@@ -66,9 +81,9 @@ export default function AdminDashboardPage() {
       try {
         const res = await fetch('/api/products')
         const json = await res.json()
-        if (!cancelled) setProducts(json.products ?? seedProducts)
+        if (!cancelled) setProducts(json.products ?? [])
       } catch {
-        if (!cancelled) setProducts(seedProducts)
+        if (!cancelled) setProducts([])
       } finally {
         if (!cancelled) setLoadingProducts(false)
       }
@@ -76,6 +91,20 @@ export default function AdminDashboardPage() {
     load()
     return () => { cancelled = true }
   }, [session])
+
+  const categoriesByBrand = useMemo(() => {
+    const map: Record<Brand, string[]> = { organics: [], trends: [] }
+    products.forEach(p => {
+      if (!map[p.brand].includes(p.category)) {
+        map[p.brand].push(p.category)
+      }
+    })
+    return map
+  }, [products])
+
+  const currentCategories = categoriesByBrand[form.brand]
+  const isNewCategory = form.category === '__new__'
+  const resolvedCategory = isNewCategory ? form.newCategory.trim() : form.category
 
   const stats = useMemo(() => {
     const total = products.length
@@ -103,38 +132,165 @@ export default function AdminDashboardPage() {
     return { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }
   }
 
-  const handleAddProduct = async (e: React.FormEvent) => {
+  const resetForm = () => {
+    setFormMode(null)
+    setEditingId(null)
+    setForm(EMPTY_FORM)
+    setImageFiles([])
+    setExistingImages([])
+    setRemovedImages([])
+    setFormError('')
+    if (fileInputRef.current) fileInputRef.current.value = ''
+  }
+
+  const openAddForm = () => {
+    resetForm()
+    setFormMode('add')
+  }
+
+  const openEditForm = (product: Product) => {
+    setFormMode('edit')
+    setEditingId(product.id)
+    setForm({
+      name: product.name,
+      price: String(product.price),
+      category: product.category,
+      newCategory: '',
+      brand: product.brand,
+      description: product.description,
+    })
+    setExistingImages([...product.images])
+    setRemovedImages([])
+    setImageFiles([])
+    setFormError('')
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  const uploadImages = async (files: File[]): Promise<string[]> => {
+    if (!supabase || files.length === 0) return []
+
+    const urls: string[] = []
+    for (const file of files) {
+      const ext = file.name.split('.').pop() || 'jpg'
+      const path = `${crypto.randomUUID()}.${ext}`
+
+      const { error } = await supabase.storage
+        .from('product-images')
+        .upload(path, file, { contentType: file.type })
+
+      if (error) throw new Error(`Upload failed: ${error.message}`)
+
+      const { data: urlData } = supabase.storage
+        .from('product-images')
+        .getPublicUrl(path)
+
+      urls.push(urlData.publicUrl)
+    }
+    return urls
+  }
+
+  const deleteStorageImages = async (urls: string[]) => {
+    if (!supabase || urls.length === 0) return
+
+    const paths = urls
+      .map(url => {
+        const match = url.match(/\/storage\/v1\/object\/public\/product-images\/(.+)/)
+        return match ? match[1] : null
+      })
+      .filter((p): p is string => p !== null)
+
+    if (paths.length) {
+      await supabase.storage.from('product-images').remove(paths)
+    }
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!form.name || !form.price || !form.category) return
+    if (!form.name || !form.price || !resolvedCategory) {
+      setFormError('Name, price, and category are required')
+      return
+    }
+    if (existingImages.length === 0 && imageFiles.length === 0) {
+      setFormError('At least one image is required')
+      return
+    }
 
     setSaving(true)
     setFormError('')
+
     try {
-      const headers = await authHeaders()
-      const res = await fetch('/api/products', {
-        method: 'POST',
-        headers,
-        body: JSON.stringify({
-          name: form.name,
-          price: parseFloat(form.price),
-          category: form.category,
-          brand: form.brand,
-          description: form.description,
-          images: form.image_url ? [form.image_url] : [],
-          in_stock: true,
-        }),
-      })
-      const json = await res.json()
-      if (json.product) {
-        setProducts(prev => [json.product, ...prev])
-        setForm(EMPTY_FORM)
-        setShowForm(false)
-      } else {
-        setFormError(json.error || 'Failed to save product')
+      const newUrls = await uploadImages(imageFiles)
+
+      if (removedImages.length) {
+        await deleteStorageImages(removedImages)
       }
+
+      const allImages = [...existingImages, ...newUrls]
+      const headers = await authHeaders()
+
+      if (formMode === 'add') {
+        const res = await fetch('/api/products', {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({
+            name: form.name,
+            price: parseFloat(form.price),
+            category: resolvedCategory,
+            brand: form.brand,
+            description: form.description,
+            images: allImages,
+            in_stock: true,
+          }),
+        })
+        const json = await res.json()
+        if (json.product) {
+          setProducts(prev => [json.product, ...prev])
+          resetForm()
+        } else {
+          setFormError(json.error || 'Failed to save product')
+        }
+      } else if (formMode === 'edit' && editingId) {
+        const res = await fetch('/api/products', {
+          method: 'PATCH',
+          headers,
+          body: JSON.stringify({
+            id: editingId,
+            name: form.name,
+            price: parseFloat(form.price),
+            category: resolvedCategory,
+            brand: form.brand,
+            description: form.description,
+            images: allImages,
+          }),
+        })
+        const json = await res.json()
+        if (json.product) {
+          setProducts(prev => prev.map(p => (p.id === editingId ? json.product : p)))
+          resetForm()
+        } else {
+          setFormError(json.error || 'Failed to update product')
+        }
+      }
+    } catch (err) {
+      setFormError(err instanceof Error ? err.message : 'Something went wrong')
     } finally {
       setSaving(false)
     }
+  }
+
+  const handleFilesSelected = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || [])
+    setImageFiles(prev => [...prev, ...files])
+    if (fileInputRef.current) fileInputRef.current.value = ''
+  }
+
+  const removeNewImage = (index: number) => {
+    setImageFiles(prev => prev.filter((_, i) => i !== index))
+  }
+
+  const removeExistingImage = (url: string) => {
+    setExistingImages(prev => prev.filter(u => u !== url))
+    setRemovedImages(prev => [...prev, url])
   }
 
   const handleToggleStock = async (product: Product) => {
@@ -178,7 +334,6 @@ export default function AdminDashboardPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Top navbar */}
       <header className="flex items-center justify-between px-8 py-5" style={{ backgroundColor: '#1a1a2e' }}>
         <div className="flex items-center gap-3">
           <span
@@ -198,7 +353,6 @@ export default function AdminDashboardPage() {
       </header>
 
       <div className="mx-auto max-w-7xl px-6 py-10">
-        {/* Stats */}
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
           {stats.map(stat => (
             <div
@@ -212,7 +366,6 @@ export default function AdminDashboardPage() {
           ))}
         </div>
 
-        {/* Tabs + Add button */}
         <div className="mt-10 flex flex-wrap items-center justify-between gap-4">
           <div className="flex gap-2 rounded-full bg-white p-1 shadow-sm">
             {(['all', 'organics', 'trends'] as Tab[]).map(t => (
@@ -231,64 +384,148 @@ export default function AdminDashboardPage() {
           </div>
 
           <button
-            onClick={() => setShowForm(s => !s)}
+            onClick={() => formMode ? resetForm() : openAddForm()}
             className="rounded-full px-5 py-2.5 text-sm font-semibold text-white transition-transform hover:-translate-y-0.5"
             style={{ background: 'linear-gradient(90deg, #3B5E1F, #5a8a31)' }}
           >
-            {showForm ? '✕ Close' : '+ Add Product'}
+            {formMode ? '✕ Close' : '+ Add Product'}
           </button>
         </div>
 
-        {/* Add product form */}
-        {showForm && (
-          <form onSubmit={handleAddProduct} className="animate-fadeUp mt-6 grid grid-cols-1 gap-4 rounded-2xl bg-white p-6 shadow-sm sm:grid-cols-2">
-            <label className="flex flex-col gap-1.5">
-              <span className="text-xs font-medium text-gray-600">Name</span>
-              <input required value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} className="dash-input" />
-            </label>
-            <label className="flex flex-col gap-1.5">
-              <span className="text-xs font-medium text-gray-600">Price</span>
-              <input required type="number" step="0.01" value={form.price} onChange={e => setForm(f => ({ ...f, price: e.target.value }))} className="dash-input" />
-            </label>
-            <label className="flex flex-col gap-1.5">
-              <span className="text-xs font-medium text-gray-600">Category</span>
-              <input required value={form.category} onChange={e => setForm(f => ({ ...f, category: e.target.value }))} className="dash-input" />
-            </label>
-            <label className="flex flex-col gap-1.5">
-              <span className="text-xs font-medium text-gray-600">Brand</span>
-              <select value={form.brand} onChange={e => setForm(f => ({ ...f, brand: e.target.value as Brand }))} className="dash-input">
-                <option value="organics">Organics</option>
-                <option value="trends">Trends</option>
-              </select>
-            </label>
-            <label className="flex flex-col gap-1.5 sm:col-span-2">
-              <span className="text-xs font-medium text-gray-600">Image URL</span>
-              <input value={form.image_url} onChange={e => setForm(f => ({ ...f, image_url: e.target.value }))} className="dash-input" placeholder="https://..." />
-            </label>
-            <label className="flex flex-col gap-1.5 sm:col-span-2">
-              <span className="text-xs font-medium text-gray-600">Description</span>
-              <textarea rows={3} value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} className="dash-input resize-none" />
-            </label>
-            {formError && <p className="text-sm text-red-500 sm:col-span-2">{formError}</p>}
-            <div className="flex gap-3 sm:col-span-2">
-              <button type="submit" disabled={saving} className="rounded-full px-6 py-2.5 text-sm font-semibold text-white" style={{ backgroundColor: '#3B5E1F' }}>
-                {saving ? 'Saving…' : 'Save'}
+        {formMode && (
+          <form onSubmit={handleSubmit} className="animate-fadeUp mt-6 rounded-2xl bg-white p-6 shadow-sm">
+            <h3 className="mb-4 font-serif text-lg font-bold text-gray-900">
+              {formMode === 'add' ? 'Add New Product' : 'Edit Product'}
+            </h3>
+
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <label className="flex flex-col gap-1.5">
+                <span className="text-xs font-medium text-gray-600">Name</span>
+                <input required value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} className="dash-input" />
+              </label>
+              <label className="flex flex-col gap-1.5">
+                <span className="text-xs font-medium text-gray-600">Price (₹)</span>
+                <input required type="number" step="0.01" value={form.price} onChange={e => setForm(f => ({ ...f, price: e.target.value }))} className="dash-input" />
+              </label>
+              <label className="flex flex-col gap-1.5">
+                <span className="text-xs font-medium text-gray-600">Brand</span>
+                <select
+                  value={form.brand}
+                  onChange={e => setForm(f => ({ ...f, brand: e.target.value as Brand, category: '', newCategory: '' }))}
+                  className="dash-input"
+                >
+                  <option value="organics">Organics</option>
+                  <option value="trends">Trends</option>
+                </select>
+              </label>
+              <label className="flex flex-col gap-1.5">
+                <span className="text-xs font-medium text-gray-600">Category</span>
+                <select
+                  value={form.category}
+                  onChange={e => setForm(f => ({ ...f, category: e.target.value, newCategory: '' }))}
+                  className="dash-input"
+                >
+                  <option value="">Select category…</option>
+                  {currentCategories.map(cat => (
+                    <option key={cat} value={cat}>{cat}</option>
+                  ))}
+                  <option value="__new__">+ Create new category…</option>
+                </select>
+              </label>
+
+              {isNewCategory && (
+                <label className="flex flex-col gap-1.5 sm:col-span-2">
+                  <span className="text-xs font-medium text-gray-600">New Category Name</span>
+                  <input
+                    required
+                    value={form.newCategory}
+                    onChange={e => setForm(f => ({ ...f, newCategory: e.target.value }))}
+                    className="dash-input"
+                    placeholder="e.g. Serums, Dresses, Eye Care…"
+                    autoFocus
+                  />
+                </label>
+              )}
+
+              <label className="flex flex-col gap-1.5 sm:col-span-2">
+                <span className="text-xs font-medium text-gray-600">Description</span>
+                <textarea rows={3} value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} className="dash-input resize-none" />
+              </label>
+
+              <div className="flex flex-col gap-3 sm:col-span-2">
+                <span className="text-xs font-medium text-gray-600">Product Images</span>
+
+                {(existingImages.length > 0 || imageFiles.length > 0) && (
+                  <div className="flex flex-wrap gap-3">
+                    {existingImages.map((url, i) => (
+                      <div key={`existing-${i}`} className="group relative h-24 w-24 overflow-hidden rounded-xl border border-gray-200">
+                        <Image src={url} alt={`Image ${i + 1}`} fill unoptimized className="object-cover" />
+                        <button
+                          type="button"
+                          onClick={() => removeExistingImage(url)}
+                          className="absolute right-1 top-1 flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-xs text-white opacity-0 transition-opacity group-hover:opacity-100"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ))}
+                    {imageFiles.map((file, i) => (
+                      <div key={`new-${i}`} className="group relative h-24 w-24 overflow-hidden rounded-xl border-2 border-dashed border-green-300">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={URL.createObjectURL(file)} alt={`New ${i + 1}`} className="h-full w-full object-cover" />
+                        <button
+                          type="button"
+                          onClick={() => removeNewImage(i)}
+                          className="absolute right-1 top-1 flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-xs text-white opacity-0 transition-opacity group-hover:opacity-100"
+                        >
+                          ✕
+                        </button>
+                        <span className="absolute bottom-1 left-1 rounded bg-green-600 px-1.5 py-0.5 text-[9px] font-bold text-white">NEW</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                <div>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={handleFilesSelected}
+                    className="hidden"
+                    id="image-upload"
+                  />
+                  <label
+                    htmlFor="image-upload"
+                    className="inline-flex cursor-pointer items-center gap-2 rounded-xl border-2 border-dashed border-gray-300 px-4 py-3 text-sm text-gray-500 transition-colors hover:border-gray-400 hover:text-gray-700"
+                  >
+                    + Add Images
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            {formError && <p className="mt-4 text-sm text-red-500">{formError}</p>}
+
+            <div className="mt-4 flex gap-3">
+              <button type="submit" disabled={saving} className="rounded-full px-6 py-2.5 text-sm font-semibold text-white disabled:opacity-50" style={{ backgroundColor: '#3B5E1F' }}>
+                {saving ? (formMode === 'add' ? 'Adding…' : 'Updating…') : (formMode === 'add' ? 'Add Product' : 'Update Product')}
               </button>
-              <button type="button" onClick={() => { setShowForm(false); setForm(EMPTY_FORM) }} className="rounded-full border border-gray-200 px-6 py-2.5 text-sm font-semibold text-gray-600">
+              <button type="button" onClick={resetForm} className="rounded-full border border-gray-200 px-6 py-2.5 text-sm font-semibold text-gray-600">
                 Cancel
               </button>
             </div>
           </form>
         )}
 
-        {/* Products table */}
         <div className="mt-8">
           {loadingProducts ? (
             <div className="flex justify-center py-16">
               <span className="animate-spin-slow inline-block h-8 w-8 rounded-full border-2 border-gray-300 border-t-gray-700" />
             </div>
           ) : (
-            <AdminTable products={filtered} onToggleStock={handleToggleStock} onRemove={handleRemove} />
+            <AdminTable products={filtered} onToggleStock={handleToggleStock} onRemove={handleRemove} onEdit={openEditForm} />
           )}
         </div>
       </div>

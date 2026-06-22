@@ -11,12 +11,9 @@ import ProductModal from '@/components/ProductModal'
 import { useReveal } from '@/hooks/useReveal'
 import { useProducts } from '@/hooks/useProducts'
 import { useCartContext } from '@/lib/CartContext'
-import { trendsProducts } from '@/lib/seedData'
 import { Product } from '@/lib/types'
 
 const ACCENT = '#8B1539'
-
-const HERO_IMAGES = trendsProducts.slice(0, 4).map(p => p.images[0])
 
 const COLLECTIONS = [
   { name: 'Summer Bloom', emoji: '🌸', bg: '#FFF5F0' },
@@ -45,6 +42,7 @@ export default function TrendsHome() {
   const { addToCart, count, openCart } = useCartContext()
   const { products } = useProducts('trends')
   const [modalProduct, setModalProduct] = useState<Product | null>(null)
+  const heroImages = products.slice(0, 4).map(p => p.images[0]).filter(Boolean)
 
   return (
     <div className="bg-white">
@@ -88,8 +86,8 @@ export default function TrendsHome() {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            {HERO_IMAGES.map((src, i) => (
+          {heroImages.length > 0 && <div className="grid grid-cols-2 gap-4">
+            {heroImages.map((src, i) => (
               <div
                 key={i}
                 className="animate-float relative overflow-hidden rounded-2xl transition-transform duration-300 hover:scale-105"
@@ -102,7 +100,7 @@ export default function TrendsHome() {
                 <Image src={src} alt="Trends product" fill unoptimized className="object-cover" sizes="(max-width: 1024px) 50vw, 25vw" />
               </div>
             ))}
-          </div>
+          </div>}
         </div>
       </section>
 

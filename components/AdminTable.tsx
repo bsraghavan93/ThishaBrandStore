@@ -7,9 +7,10 @@ interface AdminTableProps {
   products: Product[]
   onToggleStock: (product: Product) => void
   onRemove: (product: Product) => void
+  onEdit: (product: Product) => void
 }
 
-export default function AdminTable({ products, onToggleStock, onRemove }: AdminTableProps) {
+export default function AdminTable({ products, onToggleStock, onRemove, onEdit }: AdminTableProps) {
   return (
     <div className="overflow-x-auto rounded-2xl border border-gray-100 bg-white shadow-sm">
       <table className="w-full min-w-[760px] text-left text-sm">
@@ -24,6 +25,13 @@ export default function AdminTable({ products, onToggleStock, onRemove }: AdminT
           </tr>
         </thead>
         <tbody>
+          {products.length === 0 && (
+            <tr>
+              <td colSpan={6} className="px-5 py-16 text-center text-gray-400">
+                No products yet — add your first product above.
+              </td>
+            </tr>
+          )}
           {products.map(product => (
             <tr key={product.id} className="border-b border-gray-50 transition-colors hover:bg-gray-50">
               <td className="px-5 py-4">
@@ -57,6 +65,12 @@ export default function AdminTable({ products, onToggleStock, onRemove }: AdminT
               </td>
               <td className="px-5 py-4">
                 <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => onEdit(product)}
+                    className="rounded-full bg-blue-500 px-3 py-1.5 text-xs font-semibold text-white transition-transform hover:-translate-y-0.5"
+                  >
+                    Edit
+                  </button>
                   <button
                     onClick={() => onToggleStock(product)}
                     className={`rounded-full px-3 py-1.5 text-xs font-semibold text-white transition-transform hover:-translate-y-0.5 ${

@@ -11,7 +11,6 @@ import ProductModal from '@/components/ProductModal'
 import { useReveal } from '@/hooks/useReveal'
 import { useProducts } from '@/hooks/useProducts'
 import { useCartContext } from '@/lib/CartContext'
-import { organicsProducts } from '@/lib/seedData'
 import { Product } from '@/lib/types'
 
 const ACCENT = '#3B5E1F'
@@ -22,8 +21,6 @@ const VALUES = [
   { icon: '🧪', title: 'Clean Formula' },
   { icon: '🌍', title: 'Eco Packaging' },
 ]
-
-const HERO_IMAGES = organicsProducts.slice(0, 4).map(p => p.images[0])
 
 function ValueCard({ icon, title, delay }: { icon: string; title: string; delay: number }) {
   const [ref, visible] = useReveal()
@@ -48,6 +45,7 @@ export default function OrganicsHome() {
   const { addToCart, count, openCart } = useCartContext()
   const { products } = useProducts('organics')
   const [modalProduct, setModalProduct] = useState<Product | null>(null)
+  const heroImages = products.slice(0, 4).map(p => p.images[0]).filter(Boolean)
   const [valuesRef, valuesVisible] = useReveal()
   const [testimonialRef, testimonialVisible] = useReveal()
 
@@ -82,8 +80,8 @@ export default function OrganicsHome() {
             </Link>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            {HERO_IMAGES.map((src, i) => (
+          {heroImages.length > 0 && <div className="grid grid-cols-2 gap-4">
+            {heroImages.map((src, i) => (
               <div
                 key={i}
                 className="animate-float relative overflow-hidden rounded-2xl transition-transform duration-300 hover:scale-105"
@@ -96,7 +94,7 @@ export default function OrganicsHome() {
                 <Image src={src} alt="Organics product" fill unoptimized className="object-cover" sizes="(max-width: 1024px) 50vw, 25vw" />
               </div>
             ))}
-          </div>
+          </div>}
         </div>
       </section>
 

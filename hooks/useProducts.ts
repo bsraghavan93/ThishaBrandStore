@@ -1,9 +1,8 @@
 import { useEffect, useState } from 'react'
 import { Brand, Product } from '@/lib/types'
-import { allProducts } from '@/lib/seedData'
 
 export function useProducts(brand: Brand) {
-  const [products, setProducts] = useState<Product[]>(() => allProducts.filter(p => p.brand === brand))
+  const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
