@@ -38,6 +38,11 @@ export default function ProductModal({ product, accent, onClose, onAdd }: Produc
   const hasColors = product.colors && product.colors.length > 0
   const hasSizes = product.sizes && product.sizes.length > 0
   const isTrends = product.brand === 'trends'
+  const oosSizes = product.oos_sizes || []
+  const oosColors = product.oos_colors || []
+
+  const isSizeOos = (s: string) => oosSizes.includes(s)
+  const isColorOos = (name: string) => oosColors.includes(name)
 
   const handleAdd = () => {
     if (hasColors && !selectedColor) {
@@ -117,20 +122,38 @@ export default function ProductModal({ product, accent, onClose, onAdd }: Produc
                 Color {selectedColor && <span className="normal-case tracking-normal text-gray-600">— {selectedColor}</span>}
               </p>
               <div className="mt-2 flex flex-wrap gap-2">
-                {product.colors!.map(c => (
-                  <button
-                    key={c.hex}
-                    onClick={() => { setSelectedColor(c.name); setVariantError('') }}
-                    className="flex h-9 w-9 items-center justify-center rounded-full border-2 transition-transform hover:scale-110"
-                    style={{
-                      borderColor: selectedColor === c.name ? accent : '#e5e5e5',
-                      boxShadow: selectedColor === c.name ? `0 0 0 2px ${accent}33` : 'none',
-                    }}
-                    title={c.name}
-                  >
-                    <span className="h-6 w-6 rounded-full" style={{ backgroundColor: c.hex }} />
-                  </button>
-                ))}
+                {product.colors!.map(c => {
+                  const oos = isColorOos(c.name)
+                  return (
+                    <div key={c.hex} className="group relative">
+                      <button
+                        disabled={oos}
+                        onClick={() => { if (!oos) { setSelectedColor(c.name); setVariantError('') } }}
+                        className="flex h-9 w-9 items-center justify-center rounded-full border-2 transition-transform"
+                        style={{
+                          borderColor: selectedColor === c.name ? accent : '#e5e5e5',
+                          boxShadow: selectedColor === c.name ? `0 0 0 2px ${accent}33` : 'none',
+                          opacity: oos ? 0.35 : 1,
+                          cursor: oos ? 'not-allowed' : 'pointer',
+                          filter: oos ? 'grayscale(80%)' : 'none',
+                        }}
+                        title={oos ? `${c.name} — Out of Stock` : c.name}
+                      >
+                        <span className="h-6 w-6 rounded-full" style={{ backgroundColor: c.hex }} />
+                        {oos && (
+                          <span className="absolute inset-0 flex items-center justify-center">
+                            <span className="h-[2px] w-7 rotate-45 rounded bg-red-500/70" />
+                          </span>
+                        )}
+                      </button>
+                      {oos && (
+                        <span className="pointer-events-none absolute -top-8 left-1/2 z-10 -translate-x-1/2 whitespace-nowrap rounded bg-gray-900 px-2 py-1 text-[10px] font-semibold text-white opacity-0 transition-opacity group-hover:opacity-100">
+                          Out of Stock
+                        </span>
+                      )}
+                    </div>
+                  )
+                })}
               </div>
             </div>
           )}
@@ -140,20 +163,33 @@ export default function ProductModal({ product, accent, onClose, onAdd }: Produc
             <div className="mt-5">
               <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">Size</p>
               <div className="mt-2 flex flex-wrap gap-2">
-                {product.sizes!.map(s => (
-                  <button
-                    key={s}
-                    onClick={() => { setSelectedSize(s); setVariantError('') }}
-                    className="rounded-lg border px-3.5 py-2 text-xs font-semibold transition-all"
-                    style={{
-                      backgroundColor: selectedSize === s ? accent : '#fff',
-                      color: selectedSize === s ? '#fff' : '#444',
-                      borderColor: selectedSize === s ? accent : '#e5e5e5',
-                    }}
-                  >
-                    {s}
-                  </button>
-                ))}
+                {product.sizes!.map(s => {
+                  const oos = isSizeOos(s)
+                  const selected = selectedSize === s
+                  return (
+                    <div key={s} className="group relative">
+                      <button
+                        disabled={oos}
+                        onClick={() => { if (!oos) { setSelectedSize(s); setVariantError('') } }}
+                        className="relative rounded-lg border px-3.5 py-2 text-xs font-semibold transition-all"
+                        style={{
+                          backgroundColor: oos ? '#f9fafb' : selected ? accent : '#fff',
+                          color: oos ? '#d1d5db' : selected ? '#fff' : '#444',
+                          borderColor: oos ? '#e5e7eb' : selected ? accent : '#e5e5e5',
+                          cursor: oos ? 'not-allowed' : 'pointer',
+                          textDecoration: oos ? 'line-through' : 'none',
+                        }}
+                      >
+                        {s}
+                      </button>
+                      {oos && (
+                        <span className="pointer-events-none absolute -top-8 left-1/2 z-10 -translate-x-1/2 whitespace-nowrap rounded bg-gray-900 px-2 py-1 text-[10px] font-semibold text-white opacity-0 transition-opacity group-hover:opacity-100">
+                          Out of Stock
+                        </span>
+                      )}
+                    </div>
+                  )
+                })}
               </div>
             </div>
           )}

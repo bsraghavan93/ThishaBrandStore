@@ -372,6 +372,21 @@ export default function AdminDashboardPage() {
     setSizes(prev => prev.includes(size) ? prev.filter(s => s !== size) : [...prev, size])
   }
 
+  const handleSaveVariantStock = async (productId: string, oosSizes: string[], oosColors: string[]) => {
+    const headers = await authHeaders()
+    const res = await fetch('/api/products', {
+      method: 'PATCH',
+      headers,
+      body: JSON.stringify({ id: productId, oos_sizes: oosSizes, oos_colors: oosColors }),
+    })
+    const json = await res.json()
+    if (json.product) {
+      setProducts(prev => prev.map(p => (p.id === productId ? json.product : p)))
+    } else {
+      alert(json.error || 'Failed to update variant stock')
+    }
+  }
+
   const handleToggleStock = async (product: Product) => {
     const headers = await authHeaders()
     const res = await fetch('/api/products', {
@@ -720,7 +735,7 @@ export default function AdminDashboardPage() {
               <span className="animate-spin-slow inline-block h-8 w-8 rounded-full border-2 border-gray-300 border-t-gray-700" />
             </div>
           ) : (
-            <AdminTable products={filtered} onToggleStock={handleToggleStock} onRemove={handleRemove} onEdit={openEditForm} />
+            <AdminTable products={filtered} onToggleStock={handleToggleStock} onRemove={handleRemove} onEdit={openEditForm} onSaveVariantStock={handleSaveVariantStock} />
           )}
         </div>
       </div>
