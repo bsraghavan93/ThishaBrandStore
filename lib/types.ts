@@ -17,6 +17,8 @@ export interface Product {
   created_at?: string
   colors?: ProductColor[]
   sizes?: string[]
+  oos_sizes?: string[]
+  oos_colors?: string[]
   material?: string
   fit_type?: string
   care_instructions?: string
