@@ -23,7 +23,7 @@ export default function Footer({ brand }: { brand: Brand }) {
         <div className="text-sm text-gray-400">
           <p className="font-semibold uppercase tracking-widest text-gray-300" style={{ fontSize: '11px' }}>Get in touch</p>
           <p className="mt-3">Email: <a href="mailto:bsraghavan93@gmail.com" className="hover:text-white">bsraghavan93@gmail.com</a></p>
-          <p className="mt-1">WhatsApp: <a href="https://wa.me/14153738202" className="hover:text-white" target="_blank" rel="noreferrer">+1 415 373 8202</a></p>
+          <p className="mt-1">WhatsApp: <a href="https://wa.me/919942384380" className="hover:text-white" target="_blank" rel="noreferrer">+91 99423 84380</a></p>
         </div>
       </div>
 

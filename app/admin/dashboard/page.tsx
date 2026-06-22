@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import type { Session } from '@supabase/supabase-js'
 import { supabase, isSupabaseConfigured } from '@/lib/supabase'
-import { Brand, Product } from '@/lib/types'
+import { Brand, Product, ProductColor } from '@/lib/types'
 import AdminTable from '@/components/AdminTable'
 
 type Tab = 'all' | Brand
@@ -18,6 +18,13 @@ interface ProductForm {
   newCategory: string
   brand: Brand
   description: string
+  material: string
+  fit_type: string
+  care_instructions: string
+  ingredients: string
+  volume: string
+  skin_type: string
+  usage_instructions: string
 }
 
 const EMPTY_FORM: ProductForm = {
@@ -27,7 +34,25 @@ const EMPTY_FORM: ProductForm = {
   newCategory: '',
   brand: 'organics',
   description: '',
+  material: '',
+  fit_type: '',
+  care_instructions: '',
+  ingredients: '',
+  volume: '',
+  skin_type: '',
+  usage_instructions: '',
 }
+
+const INDIAN_SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL', 'Free Size']
+const MATERIALS = [
+  'Cotton', 'Pure Cotton', 'Silk', 'Banarasi Silk', 'Chanderi Silk', 'Chiffon',
+  'Georgette', 'Crepe', 'Linen', 'Polyester', 'Rayon', 'Viscose', 'Net',
+  'Velvet', 'Satin', 'Organza', 'Cotton Blend', 'Silk Blend', 'Khadi',
+  'Muslin', 'Jacquard', 'Brocade', 'Tussar',
+]
+const FIT_TYPES = ['Regular Fit', 'Slim Fit', 'Relaxed Fit', 'Oversized', 'A-Line', 'Straight', 'Flared']
+const SKIN_TYPES = ['All Skin Types', 'Normal', 'Oily', 'Dry', 'Combination', 'Sensitive', 'Acne-Prone', 'Mature']
+const VOLUMES = ['5ml', '10ml', '15ml', '30ml', '50ml', '100ml', '150ml', '200ml', '250ml', '500ml', '5g', '10g', '25g', '50g', '100g', '200g', '250g', '500g']
 
 export default function AdminDashboardPage() {
   const router = useRouter()
@@ -48,6 +73,11 @@ export default function AdminDashboardPage() {
   const [imageFiles, setImageFiles] = useState<File[]>([])
   const [existingImages, setExistingImages] = useState<string[]>([])
   const [removedImages, setRemovedImages] = useState<string[]>([])
+
+  const [colors, setColors] = useState<ProductColor[]>([])
+  const [colorName, setColorName] = useState('')
+  const [colorHex, setColorHex] = useState('#000000')
+  const [sizes, setSizes] = useState<string[]>([])
 
   useEffect(() => {
     if (!isSupabaseConfigured || !supabase) {
@@ -139,6 +169,10 @@ export default function AdminDashboardPage() {
     setImageFiles([])
     setExistingImages([])
     setRemovedImages([])
+    setColors([])
+    setSizes([])
+    setColorName('')
+    setColorHex('#000000')
     setFormError('')
     if (fileInputRef.current) fileInputRef.current.value = ''
   }
@@ -158,10 +192,19 @@ export default function AdminDashboardPage() {
       newCategory: '',
       brand: product.brand,
       description: product.description,
+      material: product.material || '',
+      fit_type: product.fit_type || '',
+      care_instructions: product.care_instructions || '',
+      ingredients: product.ingredients || '',
+      volume: product.volume || '',
+      skin_type: product.skin_type || '',
+      usage_instructions: product.usage_instructions || '',
     })
     setExistingImages([...product.images])
     setRemovedImages([])
     setImageFiles([])
+    setColors(product.colors || [])
+    setSizes(product.sizes || [])
     setFormError('')
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
@@ -204,6 +247,40 @@ export default function AdminDashboardPage() {
     }
   }
 
+  const buildPayload = () => {
+    const base: Record<string, unknown> = {
+      name: form.name,
+      price: parseFloat(form.price),
+      category: resolvedCategory,
+      brand: form.brand,
+      description: form.description,
+    }
+
+    if (form.brand === 'trends') {
+      base.colors = colors
+      base.sizes = sizes
+      base.material = form.material || null
+      base.fit_type = form.fit_type || null
+      base.care_instructions = form.care_instructions || null
+      base.ingredients = null
+      base.volume = null
+      base.skin_type = null
+      base.usage_instructions = null
+    } else {
+      base.ingredients = form.ingredients || null
+      base.volume = form.volume || null
+      base.skin_type = form.skin_type || null
+      base.usage_instructions = form.usage_instructions || null
+      base.colors = []
+      base.sizes = []
+      base.material = null
+      base.fit_type = null
+      base.care_instructions = null
+    }
+
+    return base
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!form.name || !form.price || !resolvedCategory) {
@@ -227,20 +304,13 @@ export default function AdminDashboardPage() {
 
       const allImages = [...existingImages, ...newUrls]
       const headers = await authHeaders()
+      const payload = buildPayload()
 
       if (formMode === 'add') {
         const res = await fetch('/api/products', {
           method: 'POST',
           headers,
-          body: JSON.stringify({
-            name: form.name,
-            price: parseFloat(form.price),
-            category: resolvedCategory,
-            brand: form.brand,
-            description: form.description,
-            images: allImages,
-            in_stock: true,
-          }),
+          body: JSON.stringify({ ...payload, images: allImages, in_stock: true }),
         })
         const json = await res.json()
         if (json.product) {
@@ -253,15 +323,7 @@ export default function AdminDashboardPage() {
         const res = await fetch('/api/products', {
           method: 'PATCH',
           headers,
-          body: JSON.stringify({
-            id: editingId,
-            name: form.name,
-            price: parseFloat(form.price),
-            category: resolvedCategory,
-            brand: form.brand,
-            description: form.description,
-            images: allImages,
-          }),
+          body: JSON.stringify({ ...payload, id: editingId, images: allImages }),
         })
         const json = await res.json()
         if (json.product) {
@@ -291,6 +353,23 @@ export default function AdminDashboardPage() {
   const removeExistingImage = (url: string) => {
     setExistingImages(prev => prev.filter(u => u !== url))
     setRemovedImages(prev => [...prev, url])
+  }
+
+  const addColor = () => {
+    const name = colorName.trim()
+    if (!name) return
+    if (colors.some(c => c.name.toLowerCase() === name.toLowerCase())) return
+    setColors(prev => [...prev, { name, hex: colorHex }])
+    setColorName('')
+    setColorHex('#000000')
+  }
+
+  const removeColor = (hex: string) => {
+    setColors(prev => prev.filter(c => c.hex !== hex))
+  }
+
+  const toggleSize = (size: string) => {
+    setSizes(prev => prev.includes(size) ? prev.filter(s => s !== size) : [...prev, size])
   }
 
   const handleToggleStock = async (product: Product) => {
@@ -451,58 +530,174 @@ export default function AdminDashboardPage() {
                 <span className="text-xs font-medium text-gray-600">Description</span>
                 <textarea rows={3} value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} className="dash-input resize-none" />
               </label>
+            </div>
 
-              <div className="flex flex-col gap-3 sm:col-span-2">
-                <span className="text-xs font-medium text-gray-600">Product Images</span>
+            {/* ── Brand-specific fields ── */}
+            {form.brand === 'trends' ? (
+              <div className="mt-6 rounded-xl border border-pink-100 bg-pink-50/30 p-5">
+                <h4 className="mb-4 text-sm font-bold uppercase tracking-wider" style={{ color: '#8B1539' }}>Clothing Details</h4>
 
-                {(existingImages.length > 0 || imageFiles.length > 0) && (
-                  <div className="flex flex-wrap gap-3">
-                    {existingImages.map((url, i) => (
-                      <div key={`existing-${i}`} className="group relative h-24 w-24 overflow-hidden rounded-xl border border-gray-200">
-                        <Image src={url} alt={`Image ${i + 1}`} fill unoptimized className="object-cover" />
-                        <button
-                          type="button"
-                          onClick={() => removeExistingImage(url)}
-                          className="absolute right-1 top-1 flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-xs text-white opacity-0 transition-opacity group-hover:opacity-100"
-                        >
-                          ✕
-                        </button>
-                      </div>
-                    ))}
-                    {imageFiles.map((file, i) => (
-                      <div key={`new-${i}`} className="group relative h-24 w-24 overflow-hidden rounded-xl border-2 border-dashed border-green-300">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={URL.createObjectURL(file)} alt={`New ${i + 1}`} className="h-full w-full object-cover" />
-                        <button
-                          type="button"
-                          onClick={() => removeNewImage(i)}
-                          className="absolute right-1 top-1 flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-xs text-white opacity-0 transition-opacity group-hover:opacity-100"
-                        >
-                          ✕
-                        </button>
-                        <span className="absolute bottom-1 left-1 rounded bg-green-600 px-1.5 py-0.5 text-[9px] font-bold text-white">NEW</span>
-                      </div>
+                {/* Colors */}
+                <div className="mb-4">
+                  <span className="text-xs font-medium text-gray-600">Colors</span>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {colors.map(c => (
+                      <span key={c.hex} className="inline-flex items-center gap-1.5 rounded-full border border-gray-200 bg-white py-1 pl-1.5 pr-2.5 text-xs font-medium text-gray-700">
+                        <span className="inline-block h-4 w-4 rounded-full border border-gray-200" style={{ backgroundColor: c.hex }} />
+                        {c.name}
+                        <button type="button" onClick={() => removeColor(c.hex)} className="ml-1 text-gray-400 hover:text-red-500">✕</button>
+                      </span>
                     ))}
                   </div>
-                )}
+                  <div className="mt-2 flex items-center gap-2">
+                    <input
+                      type="color"
+                      value={colorHex}
+                      onChange={e => setColorHex(e.target.value)}
+                      className="h-9 w-9 cursor-pointer rounded border-0 p-0"
+                    />
+                    <input
+                      value={colorName}
+                      onChange={e => setColorName(e.target.value)}
+                      onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addColor() } }}
+                      className="dash-input flex-1"
+                      placeholder="Color name, e.g. Blush Pink"
+                    />
+                    <button type="button" onClick={addColor} className="rounded-lg px-3 py-2 text-xs font-semibold text-white" style={{ backgroundColor: '#8B1539' }}>
+                      Add
+                    </button>
+                  </div>
+                </div>
 
-                <div>
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*"
-                    multiple
-                    onChange={handleFilesSelected}
-                    className="hidden"
-                    id="image-upload"
-                  />
-                  <label
-                    htmlFor="image-upload"
-                    className="inline-flex cursor-pointer items-center gap-2 rounded-xl border-2 border-dashed border-gray-300 px-4 py-3 text-sm text-gray-500 transition-colors hover:border-gray-400 hover:text-gray-700"
-                  >
-                    + Add Images
+                {/* Sizes */}
+                <div className="mb-4">
+                  <span className="text-xs font-medium text-gray-600">Sizes</span>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {INDIAN_SIZES.map(s => (
+                      <button
+                        key={s}
+                        type="button"
+                        onClick={() => toggleSize(s)}
+                        className="rounded-lg border px-3 py-2 text-xs font-semibold transition-all"
+                        style={{
+                          backgroundColor: sizes.includes(s) ? '#8B1539' : '#fff',
+                          color: sizes.includes(s) ? '#fff' : '#444',
+                          borderColor: sizes.includes(s) ? '#8B1539' : '#e5e5e5',
+                        }}
+                      >
+                        {s}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Material */}
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <label className="flex flex-col gap-1.5">
+                    <span className="text-xs font-medium text-gray-600">Material / Fabric</span>
+                    <select value={form.material} onChange={e => setForm(f => ({ ...f, material: e.target.value }))} className="dash-input">
+                      <option value="">Select material…</option>
+                      {MATERIALS.map(m => <option key={m} value={m}>{m}</option>)}
+                    </select>
+                  </label>
+                  <label className="flex flex-col gap-1.5">
+                    <span className="text-xs font-medium text-gray-600">Fit Type</span>
+                    <select value={form.fit_type} onChange={e => setForm(f => ({ ...f, fit_type: e.target.value }))} className="dash-input">
+                      <option value="">Select fit…</option>
+                      {FIT_TYPES.map(f => <option key={f} value={f}>{f}</option>)}
+                    </select>
                   </label>
                 </div>
+
+                <label className="mt-4 flex flex-col gap-1.5">
+                  <span className="text-xs font-medium text-gray-600">Care Instructions</span>
+                  <input value={form.care_instructions} onChange={e => setForm(f => ({ ...f, care_instructions: e.target.value }))} className="dash-input" placeholder="e.g. Machine Wash Cold, Dry Clean Only" />
+                </label>
+              </div>
+            ) : (
+              <div className="mt-6 rounded-xl border border-green-100 bg-green-50/30 p-5">
+                <h4 className="mb-4 text-sm font-bold uppercase tracking-wider" style={{ color: '#3B5E1F' }}>Product Details</h4>
+
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <label className="flex flex-col gap-1.5">
+                    <span className="text-xs font-medium text-gray-600">Volume / Size</span>
+                    <select value={form.volume} onChange={e => setForm(f => ({ ...f, volume: e.target.value }))} className="dash-input">
+                      <option value="">Select volume…</option>
+                      {VOLUMES.map(v => <option key={v} value={v}>{v}</option>)}
+                    </select>
+                  </label>
+                  <label className="flex flex-col gap-1.5">
+                    <span className="text-xs font-medium text-gray-600">Skin Type</span>
+                    <select value={form.skin_type} onChange={e => setForm(f => ({ ...f, skin_type: e.target.value }))} className="dash-input">
+                      <option value="">Select skin type…</option>
+                      {SKIN_TYPES.map(s => <option key={s} value={s}>{s}</option>)}
+                    </select>
+                  </label>
+                </div>
+
+                <label className="mt-4 flex flex-col gap-1.5">
+                  <span className="text-xs font-medium text-gray-600">Ingredients</span>
+                  <textarea rows={3} value={form.ingredients} onChange={e => setForm(f => ({ ...f, ingredients: e.target.value }))} className="dash-input resize-none" placeholder="e.g. Rosehip Oil, Vitamin C, Hyaluronic Acid…" />
+                </label>
+
+                <label className="mt-4 flex flex-col gap-1.5">
+                  <span className="text-xs font-medium text-gray-600">Usage Instructions</span>
+                  <textarea rows={2} value={form.usage_instructions} onChange={e => setForm(f => ({ ...f, usage_instructions: e.target.value }))} className="dash-input resize-none" placeholder="e.g. Apply 2-3 drops to clean skin morning and night" />
+                </label>
+              </div>
+            )}
+
+            {/* Images */}
+            <div className="mt-6 flex flex-col gap-3">
+              <span className="text-xs font-medium text-gray-600">Product Images</span>
+
+              {(existingImages.length > 0 || imageFiles.length > 0) && (
+                <div className="flex flex-wrap gap-3">
+                  {existingImages.map((url, i) => (
+                    <div key={`existing-${i}`} className="group relative h-24 w-24 overflow-hidden rounded-xl border border-gray-200">
+                      <Image src={url} alt={`Image ${i + 1}`} fill unoptimized className="object-cover" />
+                      <button
+                        type="button"
+                        onClick={() => removeExistingImage(url)}
+                        className="absolute right-1 top-1 flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-xs text-white opacity-0 transition-opacity group-hover:opacity-100"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ))}
+                  {imageFiles.map((file, i) => (
+                    <div key={`new-${i}`} className="group relative h-24 w-24 overflow-hidden rounded-xl border-2 border-dashed border-green-300">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={URL.createObjectURL(file)} alt={`New ${i + 1}`} className="h-full w-full object-cover" />
+                      <button
+                        type="button"
+                        onClick={() => removeNewImage(i)}
+                        className="absolute right-1 top-1 flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-xs text-white opacity-0 transition-opacity group-hover:opacity-100"
+                      >
+                        ✕
+                      </button>
+                      <span className="absolute bottom-1 left-1 rounded bg-green-600 px-1.5 py-0.5 text-[9px] font-bold text-white">NEW</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <div>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={handleFilesSelected}
+                  className="hidden"
+                  id="image-upload"
+                />
+                <label
+                  htmlFor="image-upload"
+                  className="inline-flex cursor-pointer items-center gap-2 rounded-xl border-2 border-dashed border-gray-300 px-4 py-3 text-sm text-gray-500 transition-colors hover:border-gray-400 hover:text-gray-700"
+                >
+                  + Add Images
+                </label>
               </div>
             </div>
 

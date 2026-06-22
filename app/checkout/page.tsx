@@ -6,7 +6,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useCartContext } from '@/lib/CartContext'
 
-const WHATSAPP_NUMBER = '14153738202'
+const WHATSAPP_NUMBER = '919942384380'
 
 interface FormState {
   name: string
@@ -45,7 +45,14 @@ export default function CheckoutPage() {
 
   const buildWhatsAppMessage = () => {
     const itemLines = cart
-      .map(item => `• ${item.name} ×${item.qty}  ₹${(item.price * item.qty).toFixed(2)}`)
+      .map(item => {
+        let line = `• ${item.name} ×${item.qty}  ₹${(item.price * item.qty).toFixed(2)}`
+        const details: string[] = []
+        if (item.selectedColor) details.push(item.selectedColor)
+        if (item.selectedSize) details.push(`Size: ${item.selectedSize}`)
+        if (details.length) line += `\n  (${details.join(', ')})`
+        return line
+      })
       .join('\n')
 
     return `🛍️ New Thisha Order!
@@ -107,7 +114,7 @@ Notes: ${form.notes || '—'}`
         >
           ✓
         </div>
-        <h1 className="animate-fadeUp delay-100 mt-8 font-serif text-4xl font-semibold text-gray-900">Order Placed! 🎉</h1>
+        <h1 className="animate-fadeUp delay-100 mt-8 font-serif text-4xl font-semibold text-gray-900">Order Placed!</h1>
         <p className="animate-fadeUp delay-200 mt-3 text-gray-500">
           Thanks, <strong>{placedOrder.name}</strong> — we'll call <strong>{placedOrder.phone}</strong> shortly to confirm and arrange payment.
         </p>
@@ -172,12 +179,11 @@ Notes: ${form.notes || '—'}`
                   Placing Order…
                 </>
               ) : (
-                <>📲 Place Order via WhatsApp</>
+                'Place Order via WhatsApp'
               )}
             </button>
           </form>
 
-          {/* Order summary */}
           <div className="h-fit rounded-2xl bg-white p-6 shadow-sm">
             <h3 className="font-serif text-xl font-bold text-gray-900">Order Summary</h3>
             {cart.length === 0 ? (
@@ -185,13 +191,17 @@ Notes: ${form.notes || '—'}`
             ) : (
               <ul className="mt-4 flex flex-col gap-3">
                 {cart.map(item => (
-                  <li key={item.id} className="flex items-center gap-3">
+                  <li key={item.cartKey} className="flex items-center gap-3">
                     <div className="relative h-14 w-14 flex-shrink-0 overflow-hidden rounded-lg bg-gray-100">
                       <Image src={item.images[0]} alt={item.name} fill unoptimized className="object-cover" />
                     </div>
                     <div className="flex-1">
                       <p className="text-sm font-medium text-gray-900">{item.name}</p>
-                      <p className="text-xs text-gray-400">Qty {item.qty}</p>
+                      <p className="text-xs text-gray-400">
+                        Qty {item.qty}
+                        {item.selectedColor && <> · {item.selectedColor}</>}
+                        {item.selectedSize && <> · {item.selectedSize}</>}
+                      </p>
                     </div>
                     <span className="text-sm font-semibold text-gray-900">₹{(item.price * item.qty).toFixed(2)}</span>
                   </li>

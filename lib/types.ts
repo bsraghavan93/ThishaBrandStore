@@ -1,5 +1,10 @@
 export type Brand = 'organics' | 'trends'
 
+export interface ProductColor {
+  name: string
+  hex: string
+}
+
 export interface Product {
   id: string
   name: string
@@ -10,10 +15,22 @@ export interface Product {
   images: string[]
   in_stock: boolean
   created_at?: string
+  colors?: ProductColor[]
+  sizes?: string[]
+  material?: string
+  fit_type?: string
+  care_instructions?: string
+  ingredients?: string
+  volume?: string
+  skin_type?: string
+  usage_instructions?: string
 }
 
 export interface CartItem extends Product {
   qty: number
+  selectedColor?: string
+  selectedSize?: string
+  cartKey: string
 }
 
 export interface Order {

@@ -29,7 +29,7 @@ export default function CartPage() {
           <div className="mt-8 grid grid-cols-1 gap-8 lg:grid-cols-[1fr_320px]">
             <ul className="flex flex-col gap-4">
               {cart.map(item => (
-                <li key={item.id} className="flex gap-4 rounded-2xl bg-white p-4 shadow-sm">
+                <li key={item.cartKey} className="flex gap-4 rounded-2xl bg-white p-4 shadow-sm">
                   <div className="relative h-24 w-24 flex-shrink-0 overflow-hidden rounded-xl bg-gray-100">
                     <Image src={item.images[0]} alt={item.name} fill unoptimized className="object-cover" />
                   </div>
@@ -37,15 +37,19 @@ export default function CartPage() {
                     <div className="flex items-start justify-between">
                       <div>
                         <h3 className="font-serif text-lg font-bold text-gray-900">{item.name}</h3>
-                        <p className="text-sm text-gray-400">₹{item.price.toFixed(2)} each</p>
+                        <p className="text-sm text-gray-400">
+                          ₹{item.price.toFixed(2)}
+                          {item.selectedColor && <> · {item.selectedColor}</>}
+                          {item.selectedSize && <> · {item.selectedSize}</>}
+                        </p>
                       </div>
-                      <button onClick={() => removeFromCart(item.id)} className="text-gray-300 hover:text-red-500" aria-label={`Remove ${item.name}`}>🗑</button>
+                      <button onClick={() => removeFromCart(item.cartKey)} className="text-gray-300 hover:text-red-500" aria-label={`Remove ${item.name}`}>🗑</button>
                     </div>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <button onClick={() => updateQty(item.id, item.qty - 1)} className="flex h-8 w-8 items-center justify-center rounded-full border border-gray-200 hover:bg-gray-50">−</button>
+                        <button onClick={() => updateQty(item.cartKey, item.qty - 1)} className="flex h-8 w-8 items-center justify-center rounded-full border border-gray-200 hover:bg-gray-50">−</button>
                         <span className="w-6 text-center font-medium">{item.qty}</span>
-                        <button onClick={() => updateQty(item.id, item.qty + 1)} className="flex h-8 w-8 items-center justify-center rounded-full border border-gray-200 hover:bg-gray-50">+</button>
+                        <button onClick={() => updateQty(item.cartKey, item.qty + 1)} className="flex h-8 w-8 items-center justify-center rounded-full border border-gray-200 hover:bg-gray-50">+</button>
                       </div>
                       <span className="font-semibold text-gray-900">₹{(item.price * item.qty).toFixed(2)}</span>
                     </div>

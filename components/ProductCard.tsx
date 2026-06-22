@@ -18,6 +18,7 @@ function truncate(text: string, len = 68) {
 
 export default function ProductCard({ product, accent, onAdd, onView, delay = 0 }: ProductCardProps) {
   const [ref, visible] = useReveal()
+  const hasVariants = (product.colors && product.colors.length > 0) || (product.sizes && product.sizes.length > 0)
 
   return (
     <div
@@ -53,18 +54,35 @@ export default function ProductCard({ product, accent, onAdd, onView, delay = 0 
 
         <div className="mt-2 flex items-center justify-between">
           <span className="font-serif text-[19px] font-bold text-gray-900">₹{product.price.toFixed(2)}</span>
+          {product.colors && product.colors.length > 0 && (
+            <div className="flex -space-x-1">
+              {product.colors.slice(0, 5).map(c => (
+                <span
+                  key={c.hex}
+                  className="inline-block h-4 w-4 rounded-full border border-white"
+                  style={{ backgroundColor: c.hex }}
+                  title={c.name}
+                />
+              ))}
+              {product.colors.length > 5 && (
+                <span className="inline-flex h-4 w-4 items-center justify-center rounded-full border border-white bg-gray-200 text-[8px] font-bold text-gray-500">
+                  +{product.colors.length - 5}
+                </span>
+              )}
+            </div>
+          )}
         </div>
 
         <button
           disabled={!product.in_stock}
-          onClick={() => onAdd(product)}
+          onClick={() => hasVariants ? onView(product) : onAdd(product)}
           className="btn-shimmer mt-3 w-full rounded-full py-2.5 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-40"
           style={{
             backgroundImage: `linear-gradient(90deg, ${accent}, ${accent}cc, ${accent})`,
             backgroundSize: '200% auto',
           }}
         >
-          {product.in_stock ? 'Add to Cart' : 'Out of Stock'}
+          {!product.in_stock ? 'Out of Stock' : hasVariants ? 'Select Options' : 'Add to Cart'}
         </button>
       </div>
     </div>

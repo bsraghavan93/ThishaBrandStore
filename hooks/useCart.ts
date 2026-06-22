@@ -4,19 +4,20 @@ import { CartItem, Product } from '@/lib/types'
 export function useCart() {
   const [cart, setCart] = useState<CartItem[]>([])
 
-  const addToCart = (product: Product) => {
+  const addToCart = (product: Product, color?: string, size?: string) => {
+    const cartKey = `${product.id}-${color || ''}-${size || ''}`
     setCart(prev => {
-      const existing = prev.find(i => i.id === product.id)
-      if (existing) return prev.map(i => i.id === product.id ? { ...i, qty: i.qty + 1 } : i)
-      return [...prev, { ...product, qty: 1 }]
+      const existing = prev.find(i => i.cartKey === cartKey)
+      if (existing) return prev.map(i => i.cartKey === cartKey ? { ...i, qty: i.qty + 1 } : i)
+      return [...prev, { ...product, qty: 1, selectedColor: color, selectedSize: size, cartKey }]
     })
   }
 
-  const removeFromCart = (id: string) => setCart(prev => prev.filter(i => i.id !== id))
+  const removeFromCart = (cartKey: string) => setCart(prev => prev.filter(i => i.cartKey !== cartKey))
 
-  const updateQty = (id: string, qty: number) => {
-    if (qty <= 0) removeFromCart(id)
-    else setCart(prev => prev.map(i => i.id === id ? { ...i, qty } : i))
+  const updateQty = (cartKey: string, qty: number) => {
+    if (qty <= 0) removeFromCart(cartKey)
+    else setCart(prev => prev.map(i => i.cartKey === cartKey ? { ...i, qty } : i))
   }
 
   const clearCart = () => setCart([])

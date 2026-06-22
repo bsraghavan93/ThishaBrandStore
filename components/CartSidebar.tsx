@@ -9,8 +9,8 @@ interface CartSidebarProps {
   onClose: () => void
   cart: CartItem[]
   total: number
-  updateQty: (id: string, qty: number) => void
-  removeFromCart: (id: string) => void
+  updateQty: (cartKey: string, qty: number) => void
+  removeFromCart: (cartKey: string) => void
 }
 
 export default function CartSidebar({ open, onClose, cart, total, updateQty, removeFromCart }: CartSidebarProps) {
@@ -32,7 +32,6 @@ export default function CartSidebar({ open, onClose, cart, total, updateQty, rem
       onClick={(e) => { if (e.target === e.currentTarget) onClose() }}
     >
       <div className="animate-slideLeft flex h-full w-full max-w-[400px] flex-col bg-white shadow-2xl">
-        {/* Header */}
         <div className="flex items-center justify-between border-b border-gray-100 px-6 py-5">
           <div>
             <h2 className="font-serif text-2xl font-bold text-gray-900">Your Bag</h2>
@@ -43,7 +42,6 @@ export default function CartSidebar({ open, onClose, cart, total, updateQty, rem
           </button>
         </div>
 
-        {/* Items */}
         <div className="flex-1 overflow-y-auto px-6 py-4">
           {cart.length === 0 ? (
             <div className="flex h-full flex-col items-center justify-center text-center text-gray-400">
@@ -53,7 +51,7 @@ export default function CartSidebar({ open, onClose, cart, total, updateQty, rem
           ) : (
             <ul className="flex flex-col gap-4">
               {cart.map(item => (
-                <li key={item.id} className="flex gap-3">
+                <li key={item.cartKey} className="flex gap-3">
                   <div className="relative h-[78px] w-[78px] flex-shrink-0 overflow-hidden rounded-xl bg-gray-100">
                     <Image src={item.images[0]} alt={item.name} fill unoptimized className="object-cover" />
                   </div>
@@ -61,10 +59,14 @@ export default function CartSidebar({ open, onClose, cart, total, updateQty, rem
                     <div className="flex items-start justify-between gap-2">
                       <div>
                         <h4 className="font-serif text-sm font-bold leading-tight text-gray-900">{item.name}</h4>
-                        <p className="text-xs text-gray-400">₹{item.price.toFixed(2)} each</p>
+                        <p className="text-xs text-gray-400">
+                          ₹{item.price.toFixed(2)}
+                          {item.selectedColor && <> · {item.selectedColor}</>}
+                          {item.selectedSize && <> · {item.selectedSize}</>}
+                        </p>
                       </div>
                       <button
-                        onClick={() => removeFromCart(item.id)}
+                        onClick={() => removeFromCart(item.cartKey)}
                         className="text-gray-300 transition-colors hover:text-red-500"
                         aria-label={`Remove ${item.name}`}
                       >
@@ -74,14 +76,14 @@ export default function CartSidebar({ open, onClose, cart, total, updateQty, rem
                     <div className="mt-2 flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <button
-                          onClick={() => updateQty(item.id, item.qty - 1)}
+                          onClick={() => updateQty(item.cartKey, item.qty - 1)}
                           className="flex h-7 w-7 items-center justify-center rounded-full border border-gray-200 text-sm hover:bg-gray-50"
                         >
                           −
                         </button>
                         <span className="w-5 text-center text-sm font-medium">{item.qty}</span>
                         <button
-                          onClick={() => updateQty(item.id, item.qty + 1)}
+                          onClick={() => updateQty(item.cartKey, item.qty + 1)}
                           className="flex h-7 w-7 items-center justify-center rounded-full border border-gray-200 text-sm hover:bg-gray-50"
                         >
                           +
@@ -96,7 +98,6 @@ export default function CartSidebar({ open, onClose, cart, total, updateQty, rem
           )}
         </div>
 
-        {/* Footer */}
         {cart.length > 0 && (
           <div className="border-t border-gray-100 px-6 py-5">
             <div className="mb-4 flex items-center justify-between">
