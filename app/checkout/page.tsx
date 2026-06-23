@@ -30,10 +30,12 @@ export default function CheckoutPage() {
 
   const generateOrderId = () => {
     const now = new Date()
-    const date = `${now.getFullYear().toString().slice(2)}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}`
+    const y = now.getUTCFullYear().toString().slice(2)
+    const m = String(now.getUTCMonth() + 1).padStart(2, '0')
+    const d = String(now.getUTCDate()).padStart(2, '0')
     const rand = Math.random().toString(36).substring(2, 6).toUpperCase()
     const prefix = brand === 'trends' ? 'TT' : 'TO'
-    return `${prefix}-${date}-${rand}`
+    return `${prefix}-${y}${m}${d}-${rand}`
   }
 
   const brand = cart[0]?.brand || 'organics'
