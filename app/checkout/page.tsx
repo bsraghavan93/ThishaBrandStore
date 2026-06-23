@@ -26,7 +26,14 @@ export default function CheckoutPage() {
   const [form, setForm] = useState<FormState>(EMPTY_FORM)
   const [errors, setErrors] = useState<Partial<Record<keyof FormState, string>>>({})
   const [loading, setLoading] = useState(false)
-  const [placedOrder, setPlacedOrder] = useState<{ name: string; phone: string } | null>(null)
+  const [placedOrder, setPlacedOrder] = useState<{ name: string; phone: string; orderId: string } | null>(null)
+
+  const generateOrderId = () => {
+    const now = new Date()
+    const date = `${now.getFullYear().toString().slice(2)}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}`
+    const rand = Math.random().toString(36).substring(2, 6).toUpperCase()
+    return `TH-${date}-${rand}`
+  }
 
   const accent = cart[0]?.brand === 'trends' ? '#8B1539' : '#3B5E1F'
 
@@ -43,7 +50,7 @@ export default function CheckoutPage() {
     return Object.keys(next).length === 0
   }
 
-  const buildWhatsAppMessage = () => {
+  const buildWhatsAppMessage = (orderId: string) => {
     const itemLines = cart
       .map(item => {
         let line = `• ${item.name} ×${item.qty}  ₹${(item.price * item.qty).toFixed(2)}`
@@ -56,6 +63,7 @@ export default function CheckoutPage() {
       .join('\n')
 
     return `🛍️ New Thisha Order!
+📋 Order ID: ${orderId}
 
 From: ${form.name}
 Phone: ${form.phone}
@@ -76,6 +84,7 @@ Notes: ${form.notes || '—'}`
 
     setLoading(true)
     try {
+      const orderId = generateOrderId()
       const orderPayload = {
         customer_name: form.name,
         customer_phone: form.phone,
@@ -85,6 +94,7 @@ Notes: ${form.notes || '—'}`
         notes: form.notes,
         items: cart,
         total,
+        order_id: orderId,
       }
 
       await fetch('/api/orders', {
@@ -93,10 +103,10 @@ Notes: ${form.notes || '—'}`
         body: JSON.stringify(orderPayload),
       })
 
-      const message = encodeURIComponent(buildWhatsAppMessage())
+      const message = encodeURIComponent(buildWhatsAppMessage(orderId))
       window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${message}`, '_blank')
 
-      setPlacedOrder({ name: form.name, phone: form.phone })
+      setPlacedOrder({ name: form.name, phone: form.phone, orderId })
       clearCart()
     } catch (err) {
       console.error('Failed to place order', err)
@@ -115,7 +125,14 @@ Notes: ${form.notes || '—'}`
           ✓
         </div>
         <h1 className="animate-fadeUp delay-100 mt-8 font-serif text-4xl font-semibold text-gray-900">Order Placed!</h1>
-        <p className="animate-fadeUp delay-200 mt-3 text-gray-500">
+        <div
+          className="animate-fadeUp delay-150 mt-4 inline-block rounded-xl px-5 py-2.5"
+          style={{ backgroundColor: `${accent}10`, border: `1.5px solid ${accent}30` }}
+        >
+          <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">Order ID</p>
+          <p className="mt-0.5 font-mono text-lg font-bold" style={{ color: accent }}>{placedOrder.orderId}</p>
+        </div>
+        <p className="animate-fadeUp delay-200 mt-4 text-gray-500">
           Thanks, <strong>{placedOrder.name}</strong> — we'll call <strong>{placedOrder.phone}</strong> shortly to confirm and arrange payment.
         </p>
         <Link

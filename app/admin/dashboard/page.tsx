@@ -30,6 +30,7 @@ interface ProductForm {
 
 interface OrderRecord {
   id: string
+  order_id?: string
   customer_name: string
   customer_phone: string
   customer_email: string
@@ -649,6 +650,9 @@ export default function AdminDashboardPage() {
                           <div className="flex-1">
                             <div className="flex items-center gap-3">
                               <h4 className="font-serif text-base font-bold text-gray-900">{order.customer_name}</h4>
+                              {order.order_id && (
+                                <span className="rounded-md bg-gray-100 px-2 py-0.5 font-mono text-[11px] font-semibold text-gray-500">{order.order_id}</span>
+                              )}
                               <span className="rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide" style={{ backgroundColor: sc.bg, color: sc.text }}>
                                 {order.status}
                               </span>
