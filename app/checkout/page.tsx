@@ -62,7 +62,9 @@ export default function CheckoutPage() {
 
   const upiLink = `upi://pay?pa=${UPI_ID}&pn=Thisha Store&am=${total.toFixed(2)}&cu=INR&tn=Order ${orderId}`
 
-  const buildWhatsAppMessage = () => {
+  const brandLabel = brand === 'trends' ? 'Thisha Trends' : 'Thisha Organics'
+
+  const buildWhatsAppMessage = (paid: boolean) => {
     const itemLines = cart
       .map(item => {
         let line = `• ${item.name} ×${item.qty}  ₹${(item.price * item.qty).toFixed(2)}`
@@ -74,11 +76,11 @@ export default function CheckoutPage() {
       })
       .join('\n')
 
-    const paymentLine = paymentStatus === 'paid'
+    const paymentLine = paid
       ? `✅ Paid via UPI (Ref: ${upiRef})`
       : `⏳ Payment Pending — Will pay later`
 
-    return `🛍️ New Thisha Order!
+    return `🛍️ New ${brandLabel} Order!
 📋 Order ID: ${orderId}
 💳 ${paymentLine}
 
@@ -130,7 +132,7 @@ Notes: ${form.notes || '—'}`
         body: JSON.stringify(orderPayload),
       })
 
-      const message = encodeURIComponent(buildWhatsAppMessage())
+      const message = encodeURIComponent(buildWhatsAppMessage(paid))
       window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${message}`, '_blank')
 
       setStep('done')
