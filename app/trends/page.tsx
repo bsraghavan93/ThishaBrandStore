@@ -19,29 +19,34 @@ const CARD_BGS = ['#FFF5F0', '#F5EDE0', '#FDF0F4', '#F0F5FF', '#FFF8E1', '#F0FDF
 function CategoryCard({ name, image, count, bg, delay }: { name: string; image?: string; count: number; bg: string; delay: number }) {
   const [ref, visible] = useReveal()
   return (
-    <Link
+    <div
       ref={ref}
-      href={`/trends/products?category=${encodeURIComponent(name)}`}
-      className={`group relative overflow-hidden rounded-3xl transition-all duration-300 hover:-translate-y-2 ${visible ? 'animate-fadeUp' : 'opacity-0'}`}
-      style={{ backgroundColor: bg, animationDelay: visible ? `${delay}s` : undefined, boxShadow: '0 4px 24px rgba(0,0,0,0.05)' }}
+      className={`${visible ? 'animate-fadeUp' : 'opacity-0'}`}
+      style={{ animationDelay: visible ? `${delay}s` : undefined }}
     >
-      {image ? (
-        <div className="relative aspect-[4/3] overflow-hidden">
-          <Image src={image} alt={name} fill unoptimized className="object-cover transition-transform duration-500 group-hover:scale-105" />
-          <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.5), transparent 60%)' }} />
-          <div className="absolute bottom-0 left-0 p-5">
-            <h3 className="font-serif text-xl font-bold text-white">{name}</h3>
-            <p className="text-xs text-white/70">{count} product{count !== 1 ? 's' : ''}</p>
+      <Link
+        href={`/trends/products?category=${encodeURIComponent(name)}`}
+        className="group relative block overflow-hidden rounded-3xl transition-all duration-300 hover:-translate-y-2"
+        style={{ backgroundColor: bg, boxShadow: '0 4px 24px rgba(0,0,0,0.05)' }}
+      >
+        {image ? (
+          <div className="relative aspect-[4/3] overflow-hidden">
+            <Image src={image} alt={name} fill unoptimized className="object-cover transition-transform duration-500 group-hover:scale-105" />
+            <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.5), transparent 60%)' }} />
+            <div className="absolute bottom-0 left-0 p-5">
+              <h3 className="font-serif text-xl font-bold text-white">{name}</h3>
+              <p className="text-xs text-white/70">{count} product{count !== 1 ? 's' : ''}</p>
+            </div>
           </div>
-        </div>
-      ) : (
-        <div className="flex flex-col items-center gap-3 px-8 py-14 text-center">
-          <h3 className="font-serif text-2xl font-semibold text-gray-900">{name}</h3>
-          <p className="text-xs text-gray-400">{count} product{count !== 1 ? 's' : ''}</p>
-          <span className="text-sm font-semibold" style={{ color: ACCENT }}>Explore →</span>
-        </div>
-      )}
-    </Link>
+        ) : (
+          <div className="flex flex-col items-center gap-3 px-8 py-14 text-center">
+            <h3 className="font-serif text-2xl font-semibold text-gray-900">{name}</h3>
+            <p className="text-xs text-gray-400">{count} product{count !== 1 ? 's' : ''}</p>
+            <span className="text-sm font-semibold" style={{ color: ACCENT }}>Explore →</span>
+          </div>
+        )}
+      </Link>
+    </div>
   )
 }
 
