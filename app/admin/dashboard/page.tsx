@@ -99,6 +99,8 @@ export default function AdminDashboardPage() {
   const [form, setForm] = useState<ProductForm>(EMPTY_FORM)
   const [saving, setSaving] = useState(false)
   const [formError, setFormError] = useState('')
+  const [productSearch, setProductSearch] = useState('')
+  const [productPage, setProductPage] = useState(1)
 
   const [imageFiles, setImageFiles] = useState<File[]>([])
   const [existingImages, setExistingImages] = useState<string[]>([])
@@ -116,6 +118,8 @@ export default function AdminDashboardPage() {
   const [expandedOrder, setExpandedOrder] = useState<string | null>(null)
   const [orderFilter, setOrderFilter] = useState<string>('all')
   const [orderBrandFilter, setOrderBrandFilter] = useState<string>('all')
+  const [orderSearch, setOrderSearch] = useState('')
+  const [orderPage, setOrderPage] = useState(1)
 
   // ── Auth ──
   useEffect(() => {
@@ -220,10 +224,18 @@ export default function AdminDashboardPage() {
     ]
   }, [products])
 
-  const filtered = useMemo(
-    () => (tab === 'all' ? products : products.filter(p => p.brand === tab)),
-    [products, tab]
-  )
+  const filtered = useMemo(() => {
+    let result = tab === 'all' ? products : products.filter(p => p.brand === tab)
+    if (productSearch.trim()) {
+      const q = productSearch.toLowerCase()
+      result = result.filter(p => p.name.toLowerCase().includes(q) || p.category.toLowerCase().includes(q) || p.description.toLowerCase().includes(q))
+    }
+    return result
+  }, [products, tab, productSearch])
+
+  const ADMIN_PER_PAGE = 10
+  const productTotalPages = Math.ceil(filtered.length / ADMIN_PER_PAGE)
+  const paginatedProducts = filtered.slice((productPage - 1) * ADMIN_PER_PAGE, productPage * ADMIN_PER_PAGE)
 
   const resetForm = () => {
     setFormMode(null)
@@ -398,13 +410,26 @@ export default function AdminDashboardPage() {
     setConfirmRef('')
   }
 
-  const filteredOrders = useMemo(
-    () => orders.filter(o =>
+  const filteredOrders = useMemo(() => {
+    let result = orders.filter(o =>
       (orderFilter === 'all' || o.status === orderFilter) &&
       (orderBrandFilter === 'all' || o.brand === orderBrandFilter)
-    ),
-    [orders, orderFilter, orderBrandFilter]
-  )
+    )
+    if (orderSearch.trim()) {
+      const q = orderSearch.toLowerCase()
+      result = result.filter(o =>
+        o.customer_name.toLowerCase().includes(q) ||
+        o.customer_phone.includes(q) ||
+        (o.order_id && o.order_id.toLowerCase().includes(q)) ||
+        (o.customer_email && o.customer_email.toLowerCase().includes(q))
+      )
+    }
+    return result
+  }, [orders, orderFilter, orderBrandFilter, orderSearch])
+
+  const ORDER_PER_PAGE = 10
+  const orderTotalPages = Math.ceil(filteredOrders.length / ORDER_PER_PAGE)
+  const paginatedOrders = filteredOrders.slice((orderPage - 1) * ORDER_PER_PAGE, orderPage * ORDER_PER_PAGE)
 
   const orderStats = useMemo(() => {
     const base = orderBrandFilter === 'all' ? orders : orders.filter(o => o.brand === orderBrandFilter)
@@ -480,12 +505,27 @@ export default function AdminDashboardPage() {
             </div>
 
             <div className="mt-10 flex flex-wrap items-center justify-between gap-4">
-              <div className="flex gap-2 rounded-full bg-white p-1 shadow-sm">
-                {(['all', 'organics', 'trends'] as Tab[]).map(t => (
-                  <button key={t} onClick={() => setTab(t)} className="rounded-full px-4 py-2 text-sm font-medium transition-colors" style={{ backgroundColor: tab === t ? '#1a1a2e' : 'transparent', color: tab === t ? '#fff' : '#666' }}>
-                    {t === 'all' ? 'All' : t === 'organics' ? '🌿 Organics' : '🦋 Trends'}
-                  </button>
-                ))}
+              <div className="flex flex-wrap items-center gap-3">
+                <div className="flex gap-2 rounded-full bg-white p-1 shadow-sm">
+                  {(['all', 'organics', 'trends'] as Tab[]).map(t => (
+                    <button key={t} onClick={() => { setTab(t); setProductPage(1) }} className="rounded-full px-4 py-2 text-sm font-medium transition-colors" style={{ backgroundColor: tab === t ? '#1a1a2e' : 'transparent', color: tab === t ? '#fff' : '#666' }}>
+                      {t === 'all' ? 'All' : t === 'organics' ? '🌿 Organics' : '🦋 Trends'}
+                    </button>
+                  ))}
+                </div>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-gray-400">🔍</span>
+                  <input
+                    value={productSearch}
+                    onChange={e => { setProductSearch(e.target.value); setProductPage(1) }}
+                    placeholder="Search products..."
+                    className="rounded-full border border-gray-200 bg-white py-2 pl-9 pr-4 text-sm outline-none transition-colors focus:border-gray-400"
+                  />
+                  {productSearch && (
+                    <button onClick={() => { setProductSearch(''); setProductPage(1) }} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-300 hover:text-gray-500 text-xs">✕</button>
+                  )}
+                </div>
+                {productSearch && <span className="text-xs text-gray-400">{filtered.length} result{filtered.length !== 1 ? 's' : ''}</span>}
               </div>
               <button onClick={() => formMode ? resetForm() : openAddForm()} className="rounded-full px-5 py-2.5 text-sm font-semibold text-white transition-transform hover:-translate-y-0.5" style={{ background: 'linear-gradient(90deg, #3B5E1F, #5a8a31)' }}>
                 {formMode ? '✕ Close' : '+ Add Product'}
@@ -619,7 +659,16 @@ export default function AdminDashboardPage() {
               {loadingProducts ? (
                 <div className="flex justify-center py-16"><span className="animate-spin-slow inline-block h-8 w-8 rounded-full border-2 border-gray-300 border-t-gray-700" /></div>
               ) : (
-                <AdminTable products={filtered} onToggleStock={handleToggleStock} onRemove={handleRemove} onEdit={openEditForm} onSaveVariantStock={handleSaveVariantStock} />
+                <>
+                  <AdminTable products={paginatedProducts} onToggleStock={handleToggleStock} onRemove={handleRemove} onEdit={openEditForm} onSaveVariantStock={handleSaveVariantStock} />
+                  {productTotalPages > 1 && (
+                    <div className="mt-6 flex items-center justify-center gap-1.5">
+                      <button disabled={productPage === 1} onClick={() => setProductPage(p => p - 1)} className="rounded-full border border-gray-200 px-3 py-2 text-xs font-medium text-gray-500 disabled:opacity-30">←</button>
+                      <span className="px-3 text-sm text-gray-600">Page {productPage} of {productTotalPages}</span>
+                      <button disabled={productPage === productTotalPages} onClick={() => setProductPage(p => p + 1)} className="rounded-full border border-gray-200 px-3 py-2 text-xs font-medium text-gray-500 disabled:opacity-30">→</button>
+                    </div>
+                  )}
+                </>
               )}
             </div>
           </>
@@ -662,14 +711,14 @@ export default function AdminDashboardPage() {
               <div className="flex flex-wrap items-center gap-3">
                 <div className="flex gap-1 rounded-full bg-white p-1 shadow-sm">
                   {['all', 'organics', 'trends'].map(b => (
-                    <button key={b} onClick={() => setOrderBrandFilter(b)} className="rounded-full px-3.5 py-2 text-xs font-semibold capitalize transition-colors" style={{ backgroundColor: orderBrandFilter === b ? (b === 'organics' ? '#3B5E1F' : b === 'trends' ? '#8B1539' : '#1a1a2e') : 'transparent', color: orderBrandFilter === b ? '#fff' : '#666' }}>
+                    <button key={b} onClick={() => { setOrderBrandFilter(b); setOrderPage(1) }} className="rounded-full px-3.5 py-2 text-xs font-semibold capitalize transition-colors" style={{ backgroundColor: orderBrandFilter === b ? (b === 'organics' ? '#3B5E1F' : b === 'trends' ? '#8B1539' : '#1a1a2e') : 'transparent', color: orderBrandFilter === b ? '#fff' : '#666' }}>
                       {b === 'all' ? 'All Brands' : `Thisha ${b.charAt(0).toUpperCase() + b.slice(1)}`}
                     </button>
                   ))}
                 </div>
                 <div className="flex gap-1 rounded-full bg-white p-1 shadow-sm">
                   {['all', ...ORDER_STATUSES].map(s => (
-                    <button key={s} onClick={() => setOrderFilter(s)} className="rounded-full px-3.5 py-2 text-xs font-medium capitalize transition-colors" style={{ backgroundColor: orderFilter === s ? '#1a1a2e' : 'transparent', color: orderFilter === s ? '#fff' : '#666' }}>
+                    <button key={s} onClick={() => { setOrderFilter(s); setOrderPage(1) }} className="rounded-full px-3.5 py-2 text-xs font-medium capitalize transition-colors" style={{ backgroundColor: orderFilter === s ? '#1a1a2e' : 'transparent', color: orderFilter === s ? '#fff' : '#666' }}>
                       {s}
                     </button>
                   ))}
@@ -678,6 +727,22 @@ export default function AdminDashboardPage() {
               <button onClick={loadOrders} className="rounded-full border border-gray-200 bg-white px-4 py-2 text-xs font-medium text-gray-600 transition-colors hover:bg-gray-50">
                 Refresh
               </button>
+            </div>
+
+            <div className="mt-4 flex items-center gap-3">
+              <div className="relative flex-1 max-w-sm">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-gray-400">🔍</span>
+                <input
+                  value={orderSearch}
+                  onChange={e => { setOrderSearch(e.target.value); setOrderPage(1) }}
+                  placeholder="Search by name, phone, email, or order ID..."
+                  className="w-full rounded-full border border-gray-200 bg-white py-2 pl-9 pr-4 text-sm outline-none transition-colors focus:border-gray-400"
+                />
+                {orderSearch && (
+                  <button onClick={() => { setOrderSearch(''); setOrderPage(1) }} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-300 hover:text-gray-500 text-xs">✕</button>
+                )}
+              </div>
+              <span className="text-xs text-gray-400">{filteredOrders.length} order{filteredOrders.length !== 1 ? 's' : ''}</span>
             </div>
 
             <div className="mt-6">
@@ -690,7 +755,7 @@ export default function AdminDashboardPage() {
                 </div>
               ) : (
                 <div className="flex flex-col gap-4">
-                  {filteredOrders.map(order => {
+                  {paginatedOrders.map(order => {
                     const expanded = expandedOrder === order.id
                     const sc = STATUS_COLORS[order.status] || STATUS_COLORS.pending
                     const date = new Date(order.created_at)
@@ -843,6 +908,13 @@ export default function AdminDashboardPage() {
                       </div>
                     )
                   })}
+                </div>
+              )}
+              {orderTotalPages > 1 && (
+                <div className="mt-6 flex items-center justify-center gap-1.5">
+                  <button disabled={orderPage === 1} onClick={() => setOrderPage(p => p - 1)} className="rounded-full border border-gray-200 px-3 py-2 text-xs font-medium text-gray-500 disabled:opacity-30">←</button>
+                  <span className="px-3 text-sm text-gray-600">Page {orderPage} of {orderTotalPages}</span>
+                  <button disabled={orderPage === orderTotalPages} onClick={() => setOrderPage(p => p + 1)} className="rounded-full border border-gray-200 px-3 py-2 text-xs font-medium text-gray-500 disabled:opacity-30">→</button>
                 </div>
               )}
             </div>
