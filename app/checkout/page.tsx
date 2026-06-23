@@ -76,7 +76,7 @@ export default function CheckoutPage() {
 
     const paymentLine = paymentStatus === 'paid'
       ? `✅ Paid via UPI (Ref: ${upiRef})`
-      : `⏳ Payment Pending — Pay on Delivery`
+      : `⏳ Payment Pending — Will pay later`
 
     return `🛍️ New Thisha Order!
 📋 Order ID: ${orderId}
@@ -167,7 +167,7 @@ Notes: ${form.notes || '—'}`
             </span>
           ) : (
             <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-100 px-4 py-1.5 text-sm font-semibold text-amber-700">
-              ⏳ Pay on Delivery
+              ⏳ Payment Pending
             </span>
           )}
         </div>
@@ -271,21 +271,21 @@ Notes: ${form.notes || '—'}`
             {/* Pay Later */}
             <div className="flex flex-col rounded-2xl bg-white p-6 shadow-sm" style={{ border: '1.5px solid #e5e7eb' }}>
               <div className="flex items-center gap-2">
-                <span className="text-2xl">🏠</span>
+                <span className="text-2xl">💬</span>
                 <h3 className="font-serif text-xl font-bold text-gray-900">Pay Later</h3>
               </div>
               <p className="mt-2 text-xs text-gray-400">
-                Skip payment for now — pay cash on delivery or via UPI when we deliver.
+                Place your order now and arrange payment later via WhatsApp.
               </p>
 
               <div className="mt-6 flex flex-1 flex-col items-center justify-center rounded-xl bg-amber-50 p-6 text-center">
-                <span className="text-4xl">📦</span>
-                <p className="mt-3 text-sm font-semibold text-amber-800">Cash on Delivery</p>
-                <p className="mt-1 text-xs text-amber-600">Pay when you receive your order</p>
+                <span className="text-4xl">💬</span>
+                <p className="mt-3 text-sm font-semibold text-amber-800">Pay via WhatsApp</p>
+                <p className="mt-1 text-xs text-amber-600">We&apos;ll share payment details on WhatsApp after you place the order</p>
               </div>
 
               <div className="mt-4 rounded-xl bg-gray-50 p-4">
-                <p className="text-xs font-semibold text-gray-500">Amount due on delivery</p>
+                <p className="text-xs font-semibold text-gray-500">Amount to be paid</p>
                 <p className="font-serif text-2xl font-bold text-gray-900">₹{total.toFixed(2)}</p>
               </div>
 
