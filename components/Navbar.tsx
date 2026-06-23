@@ -57,31 +57,31 @@ export default function Navbar({ brand, cartCount, onCartOpen }: NavbarProps) {
         borderBottom: scrolled ? '1px solid rgba(0,0,0,0.04)' : '1px solid transparent',
       }}
     >
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
+      <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 md:px-6 md:py-4">
         {/* Left: logo */}
-        <Link href={`/${brand}`} className="flex items-center gap-3">
+        <Link href={`/${brand}`} className="flex items-center gap-2 md:gap-3">
           {brand === 'trends' ? (
             <Image
               src="/thisha-trends-logo.png"
               alt="Thisha Trends"
-              width={44}
-              height={44}
-              className="rounded-full object-cover"
+              width={36}
+              height={36}
+              className="rounded-full object-cover md:h-[44px] md:w-[44px]"
             />
           ) : (
             <span
-              className="flex h-10 w-10 items-center justify-center rounded-full text-lg"
+              className="flex h-8 w-8 items-center justify-center rounded-full text-sm md:h-10 md:w-10 md:text-lg"
               style={{ backgroundColor: accent, color: '#fff' }}
             >
               {emoji}
             </span>
           )}
           <div className="leading-tight">
-            <div className="font-serif text-xl font-semibold" style={{ color: scrolled ? '#111' : '#fff' }}>
+            <div className="font-serif text-base font-semibold md:text-xl" style={{ color: scrolled ? '#111' : '#fff' }}>
               {brandName}
             </div>
             <div
-              className="text-[10px] uppercase tracking-[2px]"
+              className="hidden text-[10px] uppercase tracking-[2px] sm:block"
               style={{ color: scrolled ? '#888' : 'rgba(255,255,255,0.7)' }}
             >
               {tagline}
@@ -104,7 +104,7 @@ export default function Navbar({ brand, cartCount, onCartOpen }: NavbarProps) {
         </nav>
 
         {/* Right side */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 md:gap-3">
           <div className="hidden sm:block">
             <BrandSwitcher active={brand} />
           </div>
@@ -131,7 +131,7 @@ export default function Navbar({ brand, cartCount, onCartOpen }: NavbarProps) {
           <button
             ref={cartBtnRef}
             onClick={onCartOpen}
-            className="relative flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-semibold text-white transition-transform hover:-translate-y-0.5"
+            className="relative flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-semibold text-white transition-transform hover:-translate-y-0.5 md:gap-1.5 md:px-4 md:py-2 md:text-sm"
             style={{ backgroundColor: accent }}
           >
             🛍️ Cart

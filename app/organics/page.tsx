@@ -113,7 +113,7 @@ export default function OrganicsHome() {
           <p className="text-xs font-bold uppercase tracking-[3px]" style={{ color: ACCENT }}>✦ Loved by many ✦</p>
           <h2 className="mt-2 font-serif text-4xl font-semibold text-gray-900">Our Bestsellers</h2>
         </div>
-        <div className="grid gap-6" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))' }}>
+        <div className="grid grid-cols-2 gap-3 md:gap-6 lg:grid-cols-4">
           {products.map((product, i) => (
             <ProductCard
               key={product.id}

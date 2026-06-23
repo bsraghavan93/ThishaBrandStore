@@ -75,7 +75,7 @@ export default function TrendsHome() {
 
       {/* Hero */}
       <section
-        className="relative overflow-hidden px-6 py-24"
+        className="relative overflow-hidden px-4 py-14 md:px-6 md:py-24"
         style={{ background: 'linear-gradient(135deg, #3D0A1B, #6B1230, #8B1539, #C8963E)' }}
       >
         <div className="pointer-events-none absolute inset-0" style={{ background: 'radial-gradient(circle at 70% 50%, rgba(255,255,255,0.18), transparent 60%)' }} />
@@ -84,7 +84,7 @@ export default function TrendsHome() {
 
         <div className="relative z-10 mx-auto grid max-w-7xl grid-cols-1 items-center gap-12 lg:grid-cols-2">
           <div className="animate-fadeUp">
-            <h1 className="font-display text-5xl font-black leading-[1.05] text-white md:text-6xl">
+            <h1 className="font-display text-3xl font-black leading-[1.05] text-white sm:text-5xl md:text-6xl">
               Dress the <br />
               <span className="italic" style={{ color: '#C8963E' }}>Woman</span> <br />
               You Are
@@ -129,12 +129,12 @@ export default function TrendsHome() {
       </section>
 
       {/* New arrivals */}
-      <section className="mx-auto max-w-7xl px-6 py-24">
+      <section className="mx-auto max-w-7xl px-4 py-12 md:px-6 md:py-24">
         <div className="mb-10 text-center">
           <p className="text-xs font-bold uppercase tracking-[3px]" style={{ color: ACCENT }}>✦ Just Dropped ✦</p>
           <h2 className="mt-2 font-serif text-4xl font-semibold text-gray-900">New Arrivals</h2>
         </div>
-        <div className="grid gap-6" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))' }}>
+        <div className="grid grid-cols-2 gap-3 md:gap-6 lg:grid-cols-4">
           {products.map((product, i) => (
             <ProductCard
               key={product.id}
@@ -150,7 +150,7 @@ export default function TrendsHome() {
 
       {/* Collections teaser */}
       {categories.length > 0 && (
-        <section className="px-6 py-24" style={{ backgroundColor: '#FDF0F4' }}>
+        <section className="px-4 py-12 md:px-6 md:py-24" style={{ backgroundColor: '#FDF0F4' }}>
           <div className="mx-auto max-w-7xl">
             <div className="mb-10 text-center">
               <p className="text-xs font-bold uppercase tracking-[3px]" style={{ color: ACCENT }}>✦ Curated for you ✦</p>

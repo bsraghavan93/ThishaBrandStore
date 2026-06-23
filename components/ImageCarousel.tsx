@@ -42,14 +42,14 @@ export default function ImageCarousel({ images, alt }: ImageCarouselProps) {
         <>
           <button
             onClick={prev}
-            className="absolute left-2 top-1/2 z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-white/70 text-sm opacity-0 backdrop-blur transition-all duration-200 hover:scale-110 group-hover:opacity-100"
+            className="absolute left-1.5 top-1/2 z-10 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full bg-white/70 text-sm opacity-70 backdrop-blur transition-all duration-200 hover:scale-110 md:left-2 md:h-8 md:w-8 md:opacity-0 md:group-hover:opacity-100"
             aria-label="Previous image"
           >
             ‹
           </button>
           <button
             onClick={next}
-            className="absolute right-2 top-1/2 z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-white/70 text-sm opacity-0 backdrop-blur transition-all duration-200 hover:scale-110 group-hover:opacity-100"
+            className="absolute right-1.5 top-1/2 z-10 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full bg-white/70 text-sm opacity-70 backdrop-blur transition-all duration-200 hover:scale-110 md:right-2 md:h-8 md:w-8 md:opacity-0 md:group-hover:opacity-100"
             aria-label="Next image"
           >
             ›

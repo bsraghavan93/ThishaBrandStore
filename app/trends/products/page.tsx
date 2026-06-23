@@ -71,7 +71,7 @@ function TrendsProductsContent() {
           })}
         </div>
 
-        <div className="grid gap-6" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(244px, 1fr))' }}>
+        <div className="grid grid-cols-2 gap-3 md:gap-6 lg:grid-cols-4">
           {filtered.map((product, i) => (
             <ProductCard
               key={product.id}

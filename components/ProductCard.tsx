@@ -23,7 +23,7 @@ export default function ProductCard({ product, accent, onAdd, onView, delay = 0 
   return (
     <div
       ref={ref}
-      className={`group relative overflow-hidden rounded-[20px] bg-white p-3 transition-all duration-300 hover:-translate-y-2 hover:scale-[1.01] ${visible ? 'animate-fadeUp' : 'opacity-0'}`}
+      className={`group relative overflow-hidden rounded-2xl bg-white p-2 transition-all duration-300 hover:-translate-y-2 hover:scale-[1.01] md:rounded-[20px] md:p-3 ${visible ? 'animate-fadeUp' : 'opacity-0'}`}
       style={{
         boxShadow: '0 4px 20px rgba(0,0,0,0.07)',
         animationDelay: visible ? `${delay}s` : undefined,
@@ -40,20 +40,20 @@ export default function ProductCard({ product, accent, onAdd, onView, delay = 0 
         )}
       </div>
 
-      <div className="px-1 pt-3">
-        <div className="text-[10px] font-bold uppercase" style={{ color: accent, letterSpacing: '2px' }}>
+      <div className="px-1 pt-2 md:pt-3">
+        <div className="text-[9px] font-bold uppercase md:text-[10px]" style={{ color: accent, letterSpacing: '2px' }}>
           {product.category}
         </div>
         <h3
           onClick={() => onView(product)}
-          className="mt-1 cursor-pointer font-serif text-[15px] font-bold text-gray-900 hover:underline"
+          className="mt-0.5 cursor-pointer font-serif text-[13px] font-bold leading-tight text-gray-900 hover:underline md:mt-1 md:text-[15px]"
         >
           {product.name}
         </h3>
-        <p className="mt-1 text-[13px] leading-snug text-gray-500">{truncate(product.description)}</p>
+        <p className="mt-0.5 hidden text-[13px] leading-snug text-gray-500 md:block">{truncate(product.description)}</p>
 
-        <div className="mt-2 flex items-center justify-between">
-          <span className="font-serif text-[19px] font-bold text-gray-900">₹{product.price.toFixed(2)}</span>
+        <div className="mt-1.5 flex items-center justify-between md:mt-2">
+          <span className="font-serif text-[15px] font-bold text-gray-900 md:text-[19px]">₹{product.price.toFixed(2)}</span>
           {product.colors && product.colors.length > 0 && (
             <div className="flex -space-x-1">
               {product.colors.slice(0, 5).map(c => (
@@ -76,7 +76,7 @@ export default function ProductCard({ product, accent, onAdd, onView, delay = 0 
         <button
           disabled={!product.in_stock}
           onClick={() => hasVariants ? onView(product) : onAdd(product)}
-          className="btn-shimmer mt-3 w-full rounded-full py-2.5 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-40"
+          className="btn-shimmer mt-2 w-full rounded-full py-2 text-xs font-semibold text-white disabled:cursor-not-allowed disabled:opacity-40 md:mt-3 md:py-2.5 md:text-sm"
           style={{
             backgroundImage: `linear-gradient(90deg, ${accent}, ${accent}cc, ${accent})`,
             backgroundSize: '200% auto',
