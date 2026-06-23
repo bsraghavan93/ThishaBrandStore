@@ -4,12 +4,12 @@ import { CartItem, Product } from '@/lib/types'
 export function useCart() {
   const [cart, setCart] = useState<CartItem[]>([])
 
-  const addToCart = (product: Product, color?: string, size?: string) => {
+  const addToCart = (product: Product, color?: string, size?: string, qty = 1) => {
     const cartKey = `${product.id}-${color || ''}-${size || ''}`
     setCart(prev => {
       const existing = prev.find(i => i.cartKey === cartKey)
-      if (existing) return prev.map(i => i.cartKey === cartKey ? { ...i, qty: i.qty + 1 } : i)
-      return [...prev, { ...product, qty: 1, selectedColor: color, selectedSize: size, cartKey }]
+      if (existing) return prev.map(i => i.cartKey === cartKey ? { ...i, qty: i.qty + qty } : i)
+      return [...prev, { ...product, qty, selectedColor: color, selectedSize: size, cartKey }]
     })
   }
 

@@ -26,8 +26,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [cartOpen, setCartOpen] = useState(false)
   const [toast, setToast] = useState<ToastInfo | null>(null)
 
-  const addToCartWithToast = useCallback((product: Product, color?: string, size?: string) => {
-    cartApi.addToCart(product, color, size)
+  const addToCartWithToast = useCallback((product: Product, color?: string, size?: string, qty?: number) => {
+    cartApi.addToCart(product, color, size, qty)
     setToast({ product, color, size, key: Date.now() })
   }, [cartApi])
 

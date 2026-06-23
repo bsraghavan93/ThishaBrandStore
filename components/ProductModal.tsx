@@ -8,13 +8,14 @@ interface ProductModalProps {
   product: Product | null
   accent: string
   onClose: () => void
-  onAdd: (p: Product, color?: string, size?: string) => void
+  onAdd: (p: Product, color?: string, size?: string, qty?: number) => void
 }
 
 export default function ProductModal({ product, accent, onClose, onAdd }: ProductModalProps) {
   const [activeImage, setActiveImage] = useState(0)
   const [selectedColor, setSelectedColor] = useState<string | undefined>()
   const [selectedSize, setSelectedSize] = useState<string | undefined>()
+  const [qty, setQty] = useState(1)
   const [variantError, setVariantError] = useState('')
   const overlayRef = useRef<HTMLDivElement>(null)
 
@@ -22,6 +23,7 @@ export default function ProductModal({ product, accent, onClose, onAdd }: Produc
     setActiveImage(0)
     setSelectedColor(undefined)
     setSelectedSize(undefined)
+    setQty(1)
     setVariantError('')
   }, [product])
 
@@ -54,7 +56,7 @@ export default function ProductModal({ product, accent, onClose, onAdd }: Produc
       return
     }
     setVariantError('')
-    onAdd(product, selectedColor, selectedSize)
+    onAdd(product, selectedColor, selectedSize, qty)
     onClose()
   }
 
@@ -217,6 +219,27 @@ export default function ProductModal({ product, accent, onClose, onAdd }: Produc
           {variantError && <p className="mt-3 text-xs font-medium text-red-500">{variantError}</p>}
 
           <div className="mt-auto pt-5">
+            <div className="mb-3 flex items-center gap-3">
+              <span className="text-xs font-semibold uppercase tracking-wider text-gray-400">Qty</span>
+              <div className="flex items-center rounded-full border border-gray-200">
+                <button
+                  onClick={() => setQty(q => Math.max(1, q - 1))}
+                  className="flex h-9 w-9 items-center justify-center rounded-full text-lg text-gray-500 transition-colors hover:bg-gray-100"
+                >
+                  −
+                </button>
+                <span className="w-8 text-center text-sm font-bold text-gray-900">{qty}</span>
+                <button
+                  onClick={() => setQty(q => Math.min(10, q + 1))}
+                  className="flex h-9 w-9 items-center justify-center rounded-full text-lg text-gray-500 transition-colors hover:bg-gray-100"
+                >
+                  +
+                </button>
+              </div>
+              {qty > 1 && (
+                <span className="text-xs text-gray-400">₹{(product.price * qty).toFixed(2)}</span>
+              )}
+            </div>
             <button
               disabled={!product.in_stock}
               onClick={handleAdd}
@@ -226,7 +249,7 @@ export default function ProductModal({ product, accent, onClose, onAdd }: Produc
                 backgroundSize: '200% auto',
               }}
             >
-              {product.in_stock ? 'Add to Cart' : 'Out of Stock'}
+              {product.in_stock ? `Add to Cart${qty > 1 ? ` (${qty})` : ''}` : 'Out of Stock'}
             </button>
           </div>
         </div>
