@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { Suspense, useMemo, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Navbar from '@/components/Navbar'
 import MarqueeBanner from '@/components/MarqueeBanner'
@@ -14,6 +14,14 @@ import { Product } from '@/lib/types'
 const ACCENT = '#3B5E1F'
 
 export default function OrganicsProductsPage() {
+  return (
+    <Suspense>
+      <OrganicsProductsContent />
+    </Suspense>
+  )
+}
+
+function OrganicsProductsContent() {
   const { addToCart, count, openCart } = useCartContext()
   const { products } = useProducts('organics')
   const [modalProduct, setModalProduct] = useState<Product | null>(null)

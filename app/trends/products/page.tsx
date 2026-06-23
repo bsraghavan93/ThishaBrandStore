@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { Suspense, useMemo, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Navbar from '@/components/Navbar'
 import MarqueeBanner from '@/components/MarqueeBanner'
@@ -14,6 +14,14 @@ import { Product } from '@/lib/types'
 const ACCENT = '#8B1539'
 
 export default function TrendsProductsPage() {
+  return (
+    <Suspense>
+      <TrendsProductsContent />
+    </Suspense>
+  )
+}
+
+function TrendsProductsContent() {
   const { addToCart, count, openCart } = useCartContext()
   const { products } = useProducts('trends')
   const [modalProduct, setModalProduct] = useState<Product | null>(null)
