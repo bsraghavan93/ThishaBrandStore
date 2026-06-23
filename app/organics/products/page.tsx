@@ -1,6 +1,7 @@
 'use client'
 
 import { useMemo, useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import Navbar from '@/components/Navbar'
 import MarqueeBanner from '@/components/MarqueeBanner'
 import Footer from '@/components/Footer'
@@ -16,7 +17,9 @@ export default function OrganicsProductsPage() {
   const { addToCart, count, openCart } = useCartContext()
   const { products } = useProducts('organics')
   const [modalProduct, setModalProduct] = useState<Product | null>(null)
-  const [activeCategory, setActiveCategory] = useState('All')
+  const searchParams = useSearchParams()
+  const initialCategory = searchParams.get('category') || 'All'
+  const [activeCategory, setActiveCategory] = useState(initialCategory)
 
   const categories = useMemo(() => ['All', ...Array.from(new Set(products.map(p => p.category)))], [products])
 

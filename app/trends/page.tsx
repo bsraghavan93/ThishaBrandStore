@@ -2,7 +2,7 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import Navbar from '@/components/Navbar'
 import MarqueeBanner from '@/components/MarqueeBanner'
 import Footer from '@/components/Footer'
@@ -14,27 +14,34 @@ import { useCartContext } from '@/lib/CartContext'
 import { Product } from '@/lib/types'
 
 const ACCENT = '#8B1539'
+const CARD_BGS = ['#FFF5F0', '#F5EDE0', '#FDF0F4', '#F0F5FF', '#FFF8E1', '#F0FDF4']
 
-const COLLECTIONS = [
-  { name: 'Summer Bloom', emoji: '🌸', bg: '#FFF5F0' },
-  { name: 'Power Dressing', emoji: '💼', bg: '#F5EDE0' },
-  { name: 'Weekend Luxe', emoji: '✨', bg: '#FDF0F4' },
-]
-
-function CollectionCard({ name, emoji, bg, delay }: { name: string; emoji: string; bg: string; delay: number }) {
+function CategoryCard({ name, image, count, bg, delay }: { name: string; image?: string; count: number; bg: string; delay: number }) {
   const [ref, visible] = useReveal()
   return (
-    <div
+    <Link
       ref={ref}
-      className={`group flex flex-col items-center gap-3 rounded-3xl px-8 py-14 text-center transition-all duration-300 hover:-translate-y-2 ${visible ? 'animate-fadeUp' : 'opacity-0'}`}
+      href={`/trends/products?category=${encodeURIComponent(name)}`}
+      className={`group relative overflow-hidden rounded-3xl transition-all duration-300 hover:-translate-y-2 ${visible ? 'animate-fadeUp' : 'opacity-0'}`}
       style={{ backgroundColor: bg, animationDelay: visible ? `${delay}s` : undefined, boxShadow: '0 4px 24px rgba(0,0,0,0.05)' }}
     >
-      <span className="text-5xl transition-transform duration-300 group-hover:scale-110">{emoji}</span>
-      <h3 className="font-serif text-2xl font-semibold text-gray-900">{name}</h3>
-      <Link href="/trends/collections" className="text-sm font-semibold" style={{ color: ACCENT }}>
-        Explore →
-      </Link>
-    </div>
+      {image ? (
+        <div className="relative aspect-[4/3] overflow-hidden">
+          <Image src={image} alt={name} fill unoptimized className="object-cover transition-transform duration-500 group-hover:scale-105" />
+          <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.5), transparent 60%)' }} />
+          <div className="absolute bottom-0 left-0 p-5">
+            <h3 className="font-serif text-xl font-bold text-white">{name}</h3>
+            <p className="text-xs text-white/70">{count} product{count !== 1 ? 's' : ''}</p>
+          </div>
+        </div>
+      ) : (
+        <div className="flex flex-col items-center gap-3 px-8 py-14 text-center">
+          <h3 className="font-serif text-2xl font-semibold text-gray-900">{name}</h3>
+          <p className="text-xs text-gray-400">{count} product{count !== 1 ? 's' : ''}</p>
+          <span className="text-sm font-semibold" style={{ color: ACCENT }}>Explore →</span>
+        </div>
+      )}
+    </Link>
   )
 }
 
@@ -43,6 +50,18 @@ export default function TrendsHome() {
   const { products } = useProducts('trends')
   const [modalProduct, setModalProduct] = useState<Product | null>(null)
   const heroImages = products.slice(0, 4).map(p => p.images[0]).filter(Boolean)
+
+  const categories = useMemo(() => {
+    const catMap = new Map<string, { count: number; image?: string }>()
+    products.forEach(p => {
+      const existing = catMap.get(p.category)
+      if (existing) { existing.count++ }
+      else { catMap.set(p.category, { count: 1, image: p.images[0] }) }
+    })
+    const result: { name: string; count: number; image?: string }[] = []
+    catMap.forEach((val, name) => result.push({ name, ...val }))
+    return result
+  }, [products])
 
   return (
     <div className="bg-white">
@@ -125,19 +144,21 @@ export default function TrendsHome() {
       </section>
 
       {/* Collections teaser */}
-      <section className="px-6 py-24" style={{ backgroundColor: '#FDF0F4' }}>
-        <div className="mx-auto max-w-7xl">
-          <div className="mb-10 text-center">
-            <p className="text-xs font-bold uppercase tracking-[3px]" style={{ color: ACCENT }}>✦ Curated for you ✦</p>
-            <h2 className="mt-2 font-serif text-4xl font-semibold text-gray-900">Shop Collections</h2>
+      {categories.length > 0 && (
+        <section className="px-6 py-24" style={{ backgroundColor: '#FDF0F4' }}>
+          <div className="mx-auto max-w-7xl">
+            <div className="mb-10 text-center">
+              <p className="text-xs font-bold uppercase tracking-[3px]" style={{ color: ACCENT }}>✦ Curated for you ✦</p>
+              <h2 className="mt-2 font-serif text-4xl font-semibold text-gray-900">Shop Collections</h2>
+            </div>
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+              {categories.map((c, i) => (
+                <CategoryCard key={c.name} name={c.name} image={c.image} count={c.count} bg={CARD_BGS[i % CARD_BGS.length]} delay={i * 0.1} />
+              ))}
+            </div>
           </div>
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-            {COLLECTIONS.map((c, i) => (
-              <CollectionCard key={c.name} {...c} delay={i * 0.1} />
-            ))}
-          </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       <Footer brand="trends" />
       <ProductModal product={modalProduct} accent={ACCENT} onClose={() => setModalProduct(null)} onAdd={addToCart} />
