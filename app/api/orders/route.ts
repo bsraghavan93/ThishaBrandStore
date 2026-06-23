@@ -97,6 +97,7 @@ export async function POST(req: NextRequest) {
           items: order.items,
           total: order.total,
           order_id: order.order_id,
+          brand: order.brand,
         })
 
       if (error) {

@@ -32,10 +32,12 @@ export default function CheckoutPage() {
     const now = new Date()
     const date = `${now.getFullYear().toString().slice(2)}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}`
     const rand = Math.random().toString(36).substring(2, 6).toUpperCase()
-    return `TH-${date}-${rand}`
+    const prefix = brand === 'trends' ? 'TT' : 'TO'
+    return `${prefix}-${date}-${rand}`
   }
 
-  const accent = cart[0]?.brand === 'trends' ? '#8B1539' : '#3B5E1F'
+  const brand = cart[0]?.brand || 'organics'
+  const accent = brand === 'trends' ? '#8B1539' : '#3B5E1F'
 
   const update = (key: keyof FormState) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setForm(f => ({ ...f, [key]: e.target.value }))
@@ -95,6 +97,7 @@ Notes: ${form.notes || '—'}`
         items: cart,
         total,
         order_id: orderId,
+        brand,
       }
 
       await fetch('/api/orders', {

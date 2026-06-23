@@ -31,6 +31,7 @@ interface ProductForm {
 interface OrderRecord {
   id: string
   order_id?: string
+  brand?: Brand
   customer_name: string
   customer_phone: string
   customer_email: string
@@ -112,6 +113,7 @@ export default function AdminDashboardPage() {
   const [ordersLoaded, setOrdersLoaded] = useState(false)
   const [expandedOrder, setExpandedOrder] = useState<string | null>(null)
   const [orderFilter, setOrderFilter] = useState<string>('all')
+  const [orderBrandFilter, setOrderBrandFilter] = useState<string>('all')
 
   // ── Auth ──
   useEffect(() => {
@@ -374,8 +376,11 @@ export default function AdminDashboardPage() {
   }
 
   const filteredOrders = useMemo(
-    () => orderFilter === 'all' ? orders : orders.filter(o => o.status === orderFilter),
-    [orders, orderFilter]
+    () => orders.filter(o =>
+      (orderFilter === 'all' || o.status === orderFilter) &&
+      (orderBrandFilter === 'all' || o.brand === orderBrandFilter)
+    ),
+    [orders, orderFilter, orderBrandFilter]
   )
 
   const orderStats = useMemo(() => {
@@ -613,12 +618,21 @@ export default function AdminDashboardPage() {
             </div>
 
             <div className="mt-8 flex flex-wrap items-center justify-between gap-4">
-              <div className="flex gap-2 rounded-full bg-white p-1 shadow-sm">
-                {['all', ...ORDER_STATUSES].map(s => (
-                  <button key={s} onClick={() => setOrderFilter(s)} className="rounded-full px-3.5 py-2 text-xs font-medium capitalize transition-colors" style={{ backgroundColor: orderFilter === s ? '#1a1a2e' : 'transparent', color: orderFilter === s ? '#fff' : '#666' }}>
-                    {s}
-                  </button>
-                ))}
+              <div className="flex flex-wrap items-center gap-3">
+                <div className="flex gap-1 rounded-full bg-white p-1 shadow-sm">
+                  {['all', 'organics', 'trends'].map(b => (
+                    <button key={b} onClick={() => setOrderBrandFilter(b)} className="rounded-full px-3.5 py-2 text-xs font-semibold capitalize transition-colors" style={{ backgroundColor: orderBrandFilter === b ? (b === 'organics' ? '#3B5E1F' : b === 'trends' ? '#8B1539' : '#1a1a2e') : 'transparent', color: orderBrandFilter === b ? '#fff' : '#666' }}>
+                      {b === 'all' ? 'All Brands' : `Thisha ${b.charAt(0).toUpperCase() + b.slice(1)}`}
+                    </button>
+                  ))}
+                </div>
+                <div className="flex gap-1 rounded-full bg-white p-1 shadow-sm">
+                  {['all', ...ORDER_STATUSES].map(s => (
+                    <button key={s} onClick={() => setOrderFilter(s)} className="rounded-full px-3.5 py-2 text-xs font-medium capitalize transition-colors" style={{ backgroundColor: orderFilter === s ? '#1a1a2e' : 'transparent', color: orderFilter === s ? '#fff' : '#666' }}>
+                      {s}
+                    </button>
+                  ))}
+                </div>
               </div>
               <button onClick={loadOrders} className="rounded-full border border-gray-200 bg-white px-4 py-2 text-xs font-medium text-gray-600 transition-colors hover:bg-gray-50">
                 Refresh
@@ -652,6 +666,11 @@ export default function AdminDashboardPage() {
                               <h4 className="font-serif text-base font-bold text-gray-900">{order.customer_name}</h4>
                               {order.order_id && (
                                 <span className="rounded-md bg-gray-100 px-2 py-0.5 font-mono text-[11px] font-semibold text-gray-500">{order.order_id}</span>
+                              )}
+                              {order.brand && (
+                                <span className="rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white" style={{ backgroundColor: order.brand === 'organics' ? '#3B5E1F' : '#8B1539' }}>
+                                  {order.brand}
+                                </span>
                               )}
                               <span className="rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide" style={{ backgroundColor: sc.bg, color: sc.text }}>
                                 {order.status}
