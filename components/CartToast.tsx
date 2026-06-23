@@ -9,7 +9,7 @@ interface CartToastProps {
   color?: string
   size?: string
   onDone: () => void
-  anchorRef: RefObject<HTMLButtonElement | null>
+  anchorRef: RefObject<HTMLButtonElement>
 }
 
 export default function CartToast({ product, color, size, onDone, anchorRef }: CartToastProps) {

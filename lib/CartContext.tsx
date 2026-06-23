@@ -17,7 +17,7 @@ interface CartContextValue extends ReturnType<typeof useCart> {
   cartOpen: boolean
   openCart: () => void
   closeCart: () => void
-  cartBtnRef: RefObject<HTMLButtonElement | null>
+  cartBtnRef: RefObject<HTMLButtonElement>
 }
 
 const CartContext = createContext<CartContextValue | null>(null)
@@ -26,7 +26,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const cartApi = useCart()
   const [cartOpen, setCartOpen] = useState(false)
   const [toast, setToast] = useState<ToastInfo | null>(null)
-  const cartBtnRef = useRef<HTMLButtonElement>(null)
+  const cartBtnRef = useRef<HTMLButtonElement>(null!)
 
   const addToCartWithToast = useCallback((product: Product, color?: string, size?: string, qty?: number) => {
     cartApi.addToCart(product, color, size, qty)
