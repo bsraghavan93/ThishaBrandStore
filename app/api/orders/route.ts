@@ -98,6 +98,8 @@ export async function POST(req: NextRequest) {
           total: order.total,
           order_id: order.order_id,
           brand: order.brand,
+          payment_status: order.payment_status || 'unpaid',
+          upi_ref: order.upi_ref,
         })
 
       if (error) {

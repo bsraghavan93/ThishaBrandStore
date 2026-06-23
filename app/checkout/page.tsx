@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation'
 import { useCartContext } from '@/lib/CartContext'
 
 const WHATSAPP_NUMBER = '919942384380'
+const UPI_ID = '8610028151@pthdfc'
 
 interface FormState {
   name: string
@@ -19,6 +20,8 @@ interface FormState {
 
 const EMPTY_FORM: FormState = { name: '', phone: '', email: '', city: '', address: '', notes: '' }
 
+type CheckoutStep = 'details' | 'payment' | 'done'
+
 export default function CheckoutPage() {
   const { cart, total, clearCart } = useCartContext()
   const router = useRouter()
@@ -26,7 +29,13 @@ export default function CheckoutPage() {
   const [form, setForm] = useState<FormState>(EMPTY_FORM)
   const [errors, setErrors] = useState<Partial<Record<keyof FormState, string>>>({})
   const [loading, setLoading] = useState(false)
-  const [placedOrder, setPlacedOrder] = useState<{ name: string; phone: string; orderId: string } | null>(null)
+  const [step, setStep] = useState<CheckoutStep>('details')
+  const [orderId, setOrderId] = useState('')
+  const [upiRef, setUpiRef] = useState('')
+  const [paymentStatus, setPaymentStatus] = useState<'paid' | 'unpaid' | null>(null)
+
+  const brand = cart[0]?.brand || 'organics'
+  const accent = brand === 'trends' ? '#8B1539' : '#3B5E1F'
 
   const generateOrderId = () => {
     const now = new Date()
@@ -37,9 +46,6 @@ export default function CheckoutPage() {
     const prefix = brand === 'trends' ? 'TT' : 'TO'
     return `${prefix}-${y}${m}${d}-${rand}`
   }
-
-  const brand = cart[0]?.brand || 'organics'
-  const accent = brand === 'trends' ? '#8B1539' : '#3B5E1F'
 
   const update = (key: keyof FormState) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setForm(f => ({ ...f, [key]: e.target.value }))
@@ -54,7 +60,9 @@ export default function CheckoutPage() {
     return Object.keys(next).length === 0
   }
 
-  const buildWhatsAppMessage = (orderId: string) => {
+  const upiLink = `upi://pay?pa=${UPI_ID}&pn=Thisha Store&am=${total.toFixed(2)}&cu=INR&tn=Order ${orderId}`
+
+  const buildWhatsAppMessage = () => {
     const itemLines = cart
       .map(item => {
         let line = `• ${item.name} ×${item.qty}  ₹${(item.price * item.qty).toFixed(2)}`
@@ -66,8 +74,13 @@ export default function CheckoutPage() {
       })
       .join('\n')
 
+    const paymentLine = paymentStatus === 'paid'
+      ? `✅ Paid via UPI (Ref: ${upiRef})`
+      : `⏳ Payment Pending — Pay on Delivery`
+
     return `🛍️ New Thisha Order!
 📋 Order ID: ${orderId}
+💳 ${paymentLine}
 
 From: ${form.name}
 Phone: ${form.phone}
@@ -82,13 +95,20 @@ ${itemLines}
 Notes: ${form.notes || '—'}`
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleDetailsSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (!validate()) return
+    const id = generateOrderId()
+    setOrderId(id)
+    setStep('payment')
+  }
 
+  const placeOrder = async (paid: boolean) => {
     setLoading(true)
+    const status = paid ? 'paid' : 'unpaid'
+    setPaymentStatus(status)
+
     try {
-      const orderId = generateOrderId()
       const orderPayload = {
         customer_name: form.name,
         customer_phone: form.phone,
@@ -100,6 +120,8 @@ Notes: ${form.notes || '—'}`
         total,
         order_id: orderId,
         brand,
+        payment_status: status,
+        upi_ref: paid ? upiRef : undefined,
       }
 
       await fetch('/api/orders', {
@@ -108,10 +130,10 @@ Notes: ${form.notes || '—'}`
         body: JSON.stringify(orderPayload),
       })
 
-      const message = encodeURIComponent(buildWhatsAppMessage(orderId))
+      const message = encodeURIComponent(buildWhatsAppMessage())
       window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${message}`, '_blank')
 
-      setPlacedOrder({ name: form.name, phone: form.phone, orderId })
+      setStep('done')
       clearCart()
     } catch (err) {
       console.error('Failed to place order', err)
@@ -120,7 +142,8 @@ Notes: ${form.notes || '—'}`
     }
   }
 
-  if (placedOrder) {
+  // ── Done screen ──
+  if (step === 'done') {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center bg-gray-50 px-6 text-center">
         <div
@@ -135,10 +158,21 @@ Notes: ${form.notes || '—'}`
           style={{ backgroundColor: `${accent}10`, border: `1.5px solid ${accent}30` }}
         >
           <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">Order ID</p>
-          <p className="mt-0.5 font-mono text-lg font-bold" style={{ color: accent }}>{placedOrder.orderId}</p>
+          <p className="mt-0.5 font-mono text-lg font-bold" style={{ color: accent }}>{orderId}</p>
+        </div>
+        <div className="animate-fadeUp delay-175 mt-3">
+          {paymentStatus === 'paid' ? (
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-green-100 px-4 py-1.5 text-sm font-semibold text-green-700">
+              ✅ Paid via UPI
+            </span>
+          ) : (
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-100 px-4 py-1.5 text-sm font-semibold text-amber-700">
+              ⏳ Pay on Delivery
+            </span>
+          )}
         </div>
         <p className="animate-fadeUp delay-200 mt-4 text-gray-500">
-          Thanks, <strong>{placedOrder.name}</strong> — we'll call <strong>{placedOrder.phone}</strong> shortly to confirm and arrange payment.
+          Thanks, <strong>{form.name}</strong> — we&apos;ll call <strong>{form.phone}</strong> shortly to confirm your order.
         </p>
         <Link
           href="/"
@@ -151,6 +185,148 @@ Notes: ${form.notes || '—'}`
     )
   }
 
+  // ── Payment step ──
+  if (step === 'payment') {
+    return (
+      <div className="min-h-screen bg-gray-50 px-6 py-10">
+        <div className="mx-auto max-w-2xl">
+          <button onClick={() => setStep('details')} className="text-sm text-gray-500 hover:text-gray-800">← Back to details</button>
+          <h1 className="mt-4 font-serif text-4xl font-semibold text-gray-900">Payment</h1>
+          <p className="mt-2 text-sm text-gray-500">
+            Order <span className="font-mono font-semibold" style={{ color: accent }}>{orderId}</span> · ₹{total.toFixed(2)}
+          </p>
+
+          <div className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-2">
+            {/* Pay Now */}
+            <div className="rounded-2xl bg-white p-6 shadow-sm" style={{ border: `1.5px solid ${accent}20` }}>
+              <div className="flex items-center gap-2">
+                <span className="text-2xl">💳</span>
+                <h3 className="font-serif text-xl font-bold text-gray-900">Pay Now (UPI)</h3>
+              </div>
+              <p className="mt-2 text-xs text-gray-400">Scan the QR or tap to open your UPI app. Enter the transaction ref after paying.</p>
+
+              {/* QR Code via Google Charts API */}
+              <div className="mt-4 flex justify-center">
+                <div className="rounded-2xl bg-white p-3 shadow-inner" style={{ border: '1px solid #eee' }}>
+                  <img
+                    src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(upiLink)}`}
+                    alt="UPI QR Code"
+                    width={200}
+                    height={200}
+                  />
+                </div>
+              </div>
+
+              <div className="mt-3 text-center">
+                <p className="text-[11px] text-gray-400">UPI ID</p>
+                <p className="font-mono text-sm font-semibold text-gray-700">{UPI_ID}</p>
+                <a
+                  href={upiLink}
+                  className="mt-2 inline-block rounded-full px-5 py-2 text-xs font-semibold text-white transition-transform hover:-translate-y-0.5"
+                  style={{ backgroundColor: accent }}
+                >
+                  Open UPI App →
+                </a>
+              </div>
+
+              <div className="mt-4 rounded-xl bg-gray-50 p-4">
+                <p className="text-xs font-semibold text-gray-500">Amount to pay</p>
+                <p className="font-serif text-2xl font-bold" style={{ color: accent }}>₹{total.toFixed(2)}</p>
+              </div>
+
+              <div className="mt-4">
+                <label className="flex flex-col gap-1.5">
+                  <span className="text-xs font-medium text-gray-600">UPI Transaction/Ref ID <span style={{ color: accent }}>*</span></span>
+                  <input
+                    value={upiRef}
+                    onChange={e => setUpiRef(e.target.value)}
+                    placeholder="e.g., 412345678901"
+                    className="checkout-input"
+                    style={{ '--accent': accent } as React.CSSProperties}
+                  />
+                  <span className="text-[10px] text-gray-400">Find this in your UPI app under transaction details</span>
+                </label>
+              </div>
+
+              <button
+                onClick={() => {
+                  if (!upiRef.trim()) { alert('Please enter the UPI transaction reference ID'); return }
+                  placeOrder(true)
+                }}
+                disabled={loading}
+                className="btn-shimmer mt-4 flex w-full items-center justify-center gap-2 rounded-full py-3.5 text-sm font-semibold text-white disabled:opacity-50"
+                style={{ backgroundImage: `linear-gradient(90deg, ${accent}, ${accent}cc, ${accent})`, backgroundSize: '200% auto' }}
+              >
+                {loading ? (
+                  <>
+                    <span className="animate-spin-slow inline-block h-4 w-4 rounded-full border-2 border-white/40 border-t-white" />
+                    Placing Order…
+                  </>
+                ) : (
+                  '✅ I\'ve Paid — Place Order'
+                )}
+              </button>
+            </div>
+
+            {/* Pay Later */}
+            <div className="flex flex-col rounded-2xl bg-white p-6 shadow-sm" style={{ border: '1.5px solid #e5e7eb' }}>
+              <div className="flex items-center gap-2">
+                <span className="text-2xl">🏠</span>
+                <h3 className="font-serif text-xl font-bold text-gray-900">Pay Later</h3>
+              </div>
+              <p className="mt-2 text-xs text-gray-400">
+                Skip payment for now — pay cash on delivery or via UPI when we deliver.
+              </p>
+
+              <div className="mt-6 flex flex-1 flex-col items-center justify-center rounded-xl bg-amber-50 p-6 text-center">
+                <span className="text-4xl">📦</span>
+                <p className="mt-3 text-sm font-semibold text-amber-800">Cash on Delivery</p>
+                <p className="mt-1 text-xs text-amber-600">Pay when you receive your order</p>
+              </div>
+
+              <div className="mt-4 rounded-xl bg-gray-50 p-4">
+                <p className="text-xs font-semibold text-gray-500">Amount due on delivery</p>
+                <p className="font-serif text-2xl font-bold text-gray-900">₹{total.toFixed(2)}</p>
+              </div>
+
+              <button
+                onClick={() => placeOrder(false)}
+                disabled={loading}
+                className="mt-4 flex w-full items-center justify-center gap-2 rounded-full border-2 py-3.5 text-sm font-semibold transition-colors hover:bg-gray-50 disabled:opacity-50"
+                style={{ borderColor: accent, color: accent }}
+              >
+                {loading ? (
+                  <>
+                    <span className="animate-spin-slow inline-block h-4 w-4 rounded-full border-2 border-current/40 border-t-current" />
+                    Placing Order…
+                  </>
+                ) : (
+                  '⏳ Pay Later — Place Order'
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <style jsx global>{`
+          .checkout-input {
+            width: 100%;
+            border: 1px solid #e5e5e5;
+            border-radius: 12px;
+            padding: 11px 14px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s ease;
+          }
+          .checkout-input:focus {
+            border-color: var(--accent);
+          }
+        `}</style>
+      </div>
+    )
+  }
+
+  // ── Details step ──
   return (
     <div className="min-h-screen bg-gray-50 px-6 py-10">
       <div className="mx-auto max-w-4xl">
@@ -161,11 +337,11 @@ Notes: ${form.notes || '—'}`
 
         <h1 className="mt-4 font-serif text-4xl font-semibold text-gray-900">Almost there</h1>
         <p className="mt-2 max-w-lg text-sm text-gray-500">
-          Fill in your details — we'll call to confirm &amp; arrange payment. No card needed online.
+          Fill in your details, then choose how you&apos;d like to pay.
         </p>
 
         <div className="mt-10 grid grid-cols-1 gap-8 lg:grid-cols-[1fr_360px]">
-          <form onSubmit={handleSubmit} className="flex flex-col gap-5 rounded-2xl bg-white p-7 shadow-sm">
+          <form onSubmit={handleDetailsSubmit} className="flex flex-col gap-5 rounded-2xl bg-white p-7 shadow-sm">
             <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
               <Field label="Full Name" required error={errors.name} accent={accent}>
                 <input value={form.name} onChange={update('name')} className="checkout-input" style={{ '--accent': accent } as React.CSSProperties} />
@@ -191,18 +367,11 @@ Notes: ${form.notes || '—'}`
 
             <button
               type="submit"
-              disabled={loading || cart.length === 0}
+              disabled={cart.length === 0}
               className="btn-shimmer mt-2 flex items-center justify-center gap-2 rounded-full py-4 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
               style={{ backgroundImage: `linear-gradient(90deg, ${accent}, ${accent}cc, ${accent})`, backgroundSize: '200% auto' }}
             >
-              {loading ? (
-                <>
-                  <span className="animate-spin-slow inline-block h-4 w-4 rounded-full border-2 border-white/40 border-t-white" />
-                  Placing Order…
-                </>
-              ) : (
-                'Place Order via WhatsApp'
-              )}
+              Continue to Payment →
             </button>
           </form>
 

@@ -41,6 +41,8 @@ interface OrderRecord {
   items: CartItem[]
   total: number
   status: string
+  payment_status?: string
+  upi_ref?: string
   created_at: string
 }
 
@@ -681,6 +683,9 @@ export default function AdminDashboardPage() {
                               {' · '}{itemCount} item{itemCount !== 1 ? 's' : ''}
                             </p>
                           </div>
+                          <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase ${order.payment_status === 'paid' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>
+                                {order.payment_status === 'paid' ? '✅ Paid' : '⏳ Unpaid'}
+                              </span>
                           <span className="font-serif text-lg font-bold text-gray-900">₹{order.total.toFixed(2)}</span>
                           <span className="text-gray-300 transition-transform" style={{ transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)' }}>▼</span>
                         </button>
@@ -698,6 +703,17 @@ export default function AdminDashboardPage() {
                                 <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Delivery Address</p>
                                 <p className="mt-1 text-sm text-gray-700">{order.address}</p>
                                 {order.city && <p className="text-sm text-gray-500">{order.city}</p>}
+                              </div>
+                            </div>
+                            <div className="mt-4 rounded-xl bg-gray-50 px-4 py-3">
+                              <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Payment</p>
+                              <div className="mt-1 flex items-center gap-2">
+                                <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-bold ${order.payment_status === 'paid' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>
+                                  {order.payment_status === 'paid' ? 'Paid via UPI' : 'Unpaid — Pay on Delivery'}
+                                </span>
+                                {order.upi_ref && (
+                                  <span className="font-mono text-xs text-gray-500">Ref: {order.upi_ref}</span>
+                                )}
                               </div>
                             </div>
 

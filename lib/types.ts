@@ -48,4 +48,6 @@ export interface Order {
   items: CartItem[]
   total: number
   status?: string
+  payment_status?: string
+  upi_ref?: string
 }
