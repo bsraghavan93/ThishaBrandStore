@@ -23,11 +23,14 @@ function CollectionCard({ collection, index }: { collection: CollectionInfo; ind
   const [ref, visible] = useReveal()
 
   return (
-    <Link
+    <div
       ref={ref}
-      href={`/trends/products?category=${encodeURIComponent(collection.name)}`}
-      className={`group relative block overflow-hidden rounded-2xl ${visible ? 'animate-fadeUp' : 'opacity-0'}`}
+      className={`${visible ? 'animate-fadeUp' : 'opacity-0'}`}
       style={{ animationDelay: visible ? `${index * 0.08}s` : undefined }}
+    >
+    <Link
+      href={`/trends/products?category=${encodeURIComponent(collection.name)}`}
+      className="group relative block overflow-hidden rounded-2xl"
     >
       <div className="relative aspect-[3/4] overflow-hidden bg-gray-100">
         {collection.images[0] && (
@@ -63,6 +66,7 @@ function CollectionCard({ collection, index }: { collection: CollectionInfo; ind
         </div>
       </div>
     </Link>
+    </div>
   )
 }
 
