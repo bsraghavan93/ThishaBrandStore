@@ -369,12 +369,33 @@ export default function AdminDashboardPage() {
   }
 
   // ── Order helpers ──
-  const handleUpdateOrderStatus = async (orderId: string, status: string) => {
+  const [confirmPopup, setConfirmPopup] = useState<{ orderId: string; existingRef?: string } | null>(null)
+  const [confirmRef, setConfirmRef] = useState('')
+  const confirmOverlayRef = useRef<HTMLDivElement>(null)
+
+  const handleUpdateOrderStatus = async (orderId: string, status: string, upiRefOverride?: string) => {
     const headers = await authHeaders()
-    const res = await fetch('/api/orders', { method: 'PATCH', headers, body: JSON.stringify({ id: orderId, status }) })
+    const body: Record<string, string> = { id: orderId, status }
+    if (status === 'confirmed' && upiRefOverride !== undefined) {
+      body.payment_status = upiRefOverride ? 'paid' : 'unpaid'
+      if (upiRefOverride) body.upi_ref = upiRefOverride
+    }
+    const res = await fetch('/api/orders', { method: 'PATCH', headers, body: JSON.stringify(body) })
     const json = await res.json()
     if (json.order) setOrders(prev => prev.map(o => (o.id === orderId ? json.order : o)))
     else alert(json.error || 'Failed to update order status')
+  }
+
+  const openConfirmPopup = (order: OrderRecord) => {
+    setConfirmRef(order.upi_ref || '')
+    setConfirmPopup({ orderId: order.id, existingRef: order.upi_ref })
+  }
+
+  const handleConfirmOrder = async () => {
+    if (!confirmPopup) return
+    await handleUpdateOrderStatus(confirmPopup.orderId, 'confirmed', confirmRef.trim())
+    setConfirmPopup(null)
+    setConfirmRef('')
   }
 
   const filteredOrders = useMemo(
@@ -793,15 +814,22 @@ export default function AdminDashboardPage() {
                                 {ORDER_STATUSES.map(s => {
                                   const c = STATUS_COLORS[s]
                                   const active = order.status === s
+                                  const needsConfirmed = (s === 'shipped' || s === 'delivered') && order.status !== 'confirmed' && order.status !== 'shipped' && order.status !== 'delivered'
+                                  const disabled = needsConfirmed
                                   return (
                                     <button
                                       key={s}
-                                      onClick={() => handleUpdateOrderStatus(order.id, s)}
-                                      className="rounded-full px-3 py-1.5 text-[11px] font-bold uppercase tracking-wide transition-all"
+                                      disabled={disabled}
+                                      title={disabled ? 'Confirm the order first' : undefined}
+                                      onClick={() => {
+                                        if (s === 'confirmed') openConfirmPopup(order)
+                                        else handleUpdateOrderStatus(order.id, s)
+                                      }}
+                                      className="rounded-full px-3 py-1.5 text-[11px] font-bold uppercase tracking-wide transition-all disabled:cursor-not-allowed disabled:opacity-30"
                                       style={{
                                         backgroundColor: active ? c.text : c.bg,
                                         color: active ? '#fff' : c.text,
-                                        opacity: active ? 1 : 0.7,
+                                        opacity: active && !disabled ? 1 : undefined,
                                       }}
                                     >
                                       {s}
@@ -821,6 +849,63 @@ export default function AdminDashboardPage() {
           </>
         )}
       </div>
+
+      {/* Confirm Order Popup */}
+      {confirmPopup && (
+        <div
+          ref={confirmOverlayRef}
+          className="fixed inset-0 z-[80] flex items-center justify-center p-4 animate-fadeIn"
+          style={{ backgroundColor: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)' }}
+          onClick={e => { if (e.target === confirmOverlayRef.current) { setConfirmPopup(null); setConfirmRef('') } }}
+        >
+          <div className="animate-scaleIn w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl">
+            <h3 className="font-serif text-lg font-bold text-gray-900">Confirm Order</h3>
+            <p className="mt-1 text-sm text-gray-500">
+              {confirmPopup.existingRef
+                ? `This order has a UPI ref: ${confirmPopup.existingRef}`
+                : 'Has the customer paid? Enter the UPI reference ID if available.'}
+            </p>
+
+            <div className="mt-5">
+              <label className="flex flex-col gap-1.5">
+                <span className="text-xs font-medium text-gray-600">UPI Transaction/Ref ID <span className="text-gray-400">(optional)</span></span>
+                <input
+                  value={confirmRef}
+                  onChange={e => setConfirmRef(e.target.value)}
+                  placeholder="e.g., 412345678901"
+                  className="dash-input"
+                />
+              </label>
+              {!confirmRef.trim() && (
+                <p className="mt-2 flex items-center gap-1.5 rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-700">
+                  <span>⚠️</span> No ref ID — order will be marked as unpaid
+                </p>
+              )}
+              {confirmRef.trim() && (
+                <p className="mt-2 flex items-center gap-1.5 rounded-lg bg-green-50 px-3 py-2 text-xs text-green-700">
+                  <span>✅</span> Order will be marked as paid
+                </p>
+              )}
+            </div>
+
+            <div className="mt-5 flex gap-3">
+              <button
+                onClick={handleConfirmOrder}
+                className="flex-1 rounded-full py-2.5 text-sm font-semibold text-white"
+                style={{ backgroundColor: '#1e40af' }}
+              >
+                {confirmRef.trim() ? '✅ Confirm as Paid' : '⏳ Confirm as Unpaid'}
+              </button>
+              <button
+                onClick={() => { setConfirmPopup(null); setConfirmRef('') }}
+                className="rounded-full border border-gray-200 px-5 py-2.5 text-sm font-semibold text-gray-600"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <style jsx global>{`
         .dash-input {
