@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { RefObject, useEffect, useState } from 'react'
 import Image from 'next/image'
 import { Product } from '@/lib/types'
 
@@ -9,42 +9,54 @@ interface CartToastProps {
   color?: string
   size?: string
   onDone: () => void
+  anchorRef: RefObject<HTMLButtonElement | null>
 }
 
-export default function CartToast({ product, color, size, onDone }: CartToastProps) {
+export default function CartToast({ product, color, size, onDone, anchorRef }: CartToastProps) {
   const [visible, setVisible] = useState(false)
+  const [pos, setPos] = useState<{ top: number; left: number; arrowLeft: number } | null>(null)
 
   useEffect(() => {
-    if (!product) return
+    if (!product || !anchorRef.current) return
+    const rect = anchorRef.current.getBoundingClientRect()
+    const toastWidth = 260
+    const centerX = rect.left + rect.width / 2
+    let left = centerX - toastWidth / 2
+    left = Math.max(8, Math.min(left, window.innerWidth - toastWidth - 8))
+    const arrowLeft = centerX - left
+    setPos({ top: rect.bottom + 10, left, arrowLeft })
     setVisible(true)
     const timer = setTimeout(() => {
       setVisible(false)
       setTimeout(onDone, 300)
     }, 3000)
     return () => clearTimeout(timer)
-  }, [product, onDone])
+  }, [product, onDone, anchorRef])
 
-  if (!product) return null
+  if (!product || !pos) return null
 
   const accent = product.brand === 'organics' ? '#3B5E1F' : '#8B1539'
 
   return (
     <div
-      className="fixed right-3 top-[62px] z-[100] transition-all duration-300"
+      className="fixed z-[100] transition-all duration-300"
       style={{
+        top: pos.top,
+        left: pos.left,
+        width: 260,
         transform: visible ? 'translateY(0) scale(1)' : 'translateY(-12px) scale(0.95)',
         opacity: visible ? 1 : 0,
-        transformOrigin: 'top right',
+        transformOrigin: 'top center',
       }}
     >
       {/* Arrow pointing up toward cart */}
       <div
-        className="absolute -top-[7px] right-6 h-3.5 w-3.5 rotate-45 bg-white"
-        style={{ boxShadow: '-2px -2px 4px rgba(0,0,0,0.06)' }}
+        className="absolute -top-[7px] h-3.5 w-3.5 rotate-45 bg-white"
+        style={{ left: pos.arrowLeft - 7, boxShadow: '-2px -2px 4px rgba(0,0,0,0.06)' }}
       />
 
       <div
-        className="relative flex w-[260px] items-start gap-3 rounded-2xl bg-white p-3"
+        className="relative flex items-start gap-3 rounded-2xl bg-white p-3"
         style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.08)' }}
       >
         {product.images[0] && (

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Brand } from '@/lib/types'
+import { useCartContext } from '@/lib/CartContext'
 import BrandSwitcher from './BrandSwitcher'
 
 interface NavLink {
@@ -31,6 +32,7 @@ const TRENDS_LINKS: NavLink[] = [
 export default function Navbar({ brand, cartCount, onCartOpen }: NavbarProps) {
   const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
+  const { cartBtnRef } = useCartContext()
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 30)
@@ -127,6 +129,7 @@ export default function Navbar({ brand, cartCount, onCartOpen }: NavbarProps) {
           </Link>
 
           <button
+            ref={cartBtnRef}
             onClick={onCartOpen}
             className="relative flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-semibold text-white transition-transform hover:-translate-y-0.5"
             style={{ backgroundColor: accent }}

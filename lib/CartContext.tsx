@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useContext, ReactNode, useState, useCallback } from 'react'
+import { createContext, useContext, ReactNode, useState, useCallback, useRef, RefObject } from 'react'
 import { useCart } from '@/hooks/useCart'
 import CartSidebar from '@/components/CartSidebar'
 import CartToast from '@/components/CartToast'
@@ -17,6 +17,7 @@ interface CartContextValue extends ReturnType<typeof useCart> {
   cartOpen: boolean
   openCart: () => void
   closeCart: () => void
+  cartBtnRef: RefObject<HTMLButtonElement | null>
 }
 
 const CartContext = createContext<CartContextValue | null>(null)
@@ -25,6 +26,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const cartApi = useCart()
   const [cartOpen, setCartOpen] = useState(false)
   const [toast, setToast] = useState<ToastInfo | null>(null)
+  const cartBtnRef = useRef<HTMLButtonElement>(null)
 
   const addToCartWithToast = useCallback((product: Product, color?: string, size?: string, qty?: number) => {
     cartApi.addToCart(product, color, size, qty)
@@ -39,6 +41,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     cartOpen,
     openCart: () => setCartOpen(true),
     closeCart: () => setCartOpen(false),
+    cartBtnRef,
   }
 
   return (
@@ -59,6 +62,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
           color={toast.color}
           size={toast.size}
           onDone={clearToast}
+          anchorRef={cartBtnRef}
         />
       )}
     </CartContext.Provider>
