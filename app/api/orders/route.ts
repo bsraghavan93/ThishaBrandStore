@@ -84,10 +84,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
     }
 
-    let orderId: string | undefined
-
     if (supabase) {
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('orders')
         .insert({
           customer_name: order.customer_name,
@@ -99,13 +97,9 @@ export async function POST(req: NextRequest) {
           items: order.items,
           total: order.total,
         })
-        .select()
-        .single()
 
       if (error) {
         console.error('Supabase order insert failed:', error.message)
-      } else {
-        orderId = data?.id
       }
     }
 
@@ -122,7 +116,7 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    return NextResponse.json({ success: true, id: orderId })
+    return NextResponse.json({ success: true })
   } catch (err) {
     console.error('Order submission failed:', err)
     return NextResponse.json({ error: 'Failed to process order' }, { status: 500 })
