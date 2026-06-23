@@ -1,7 +1,32 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { createClient } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
 import { resend, ORDER_NOTIFICATION_EMAIL } from '@/lib/resend'
 import { Order } from '@/lib/types'
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+function authedClient(token: string) {
+  if (!supabaseUrl || !supabaseAnonKey) return null
+  return createClient(supabaseUrl, supabaseAnonKey, {
+    global: { headers: { Authorization: `Bearer ${token}` } },
+  })
+}
+
+async function requireAuth(req: NextRequest) {
+  const authHeader = req.headers.get('authorization')
+  if (!authHeader || !supabase) return null
+
+  const token = authHeader.replace('Bearer ', '')
+  const { data: { user }, error } = await supabase.auth.getUser(token)
+  if (error || !user) return null
+
+  const client = authedClient(token)
+  if (!client) return null
+
+  return { user, client }
+}
 
 function buildEmailHtml(order: Order) {
   const rows = order.items
@@ -36,6 +61,19 @@ function buildEmailHtml(order: Order) {
       <p><strong>Notes:</strong> ${order.notes || '—'}</p>
     </div>
   `
+}
+
+export async function GET(req: NextRequest) {
+  const auth = await requireAuth(req)
+  if (!auth) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+  const { data, error } = await auth.client
+    .from('orders')
+    .select('*')
+    .order('created_at', { ascending: false })
+
+  if (error) return NextResponse.json({ error: error.message }, { status: 400 })
+  return NextResponse.json({ orders: data })
 }
 
 export async function POST(req: NextRequest) {
@@ -89,4 +127,22 @@ export async function POST(req: NextRequest) {
     console.error('Order submission failed:', err)
     return NextResponse.json({ error: 'Failed to process order' }, { status: 500 })
   }
+}
+
+export async function PATCH(req: NextRequest) {
+  const auth = await requireAuth(req)
+  if (!auth) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+  const { id, ...updates } = await req.json()
+  if (!id) return NextResponse.json({ error: 'Missing order id' }, { status: 400 })
+
+  const { data, error } = await auth.client
+    .from('orders')
+    .update(updates)
+    .eq('id', id)
+    .select()
+    .single()
+
+  if (error) return NextResponse.json({ error: error.message }, { status: 400 })
+  return NextResponse.json({ order: data })
 }
