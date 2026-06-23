@@ -386,11 +386,17 @@ export default function AdminDashboardPage() {
   )
 
   const orderStats = useMemo(() => {
-    const total = orders.length
-    const pending = orders.filter(o => o.status === 'pending').length
-    const revenue = orders.filter(o => o.status !== 'cancelled').reduce((s, o) => s + o.total, 0)
-    return { total, pending, revenue }
-  }, [orders])
+    const base = orderBrandFilter === 'all' ? orders : orders.filter(o => o.brand === orderBrandFilter)
+    const active = base.filter(o => o.status !== 'cancelled')
+    const total = base.length
+    const pending = base.filter(o => o.status === 'pending').length
+    const paid = active.filter(o => o.payment_status === 'paid').length
+    const unpaid = active.filter(o => o.payment_status !== 'paid').length
+    const paidRevenue = active.filter(o => o.payment_status === 'paid').reduce((s, o) => s + o.total, 0)
+    const unpaidRevenue = active.filter(o => o.payment_status !== 'paid').reduce((s, o) => s + o.total, 0)
+    const revenue = active.reduce((s, o) => s + o.total, 0)
+    return { total, pending, paid, unpaid, paidRevenue, unpaidRevenue, revenue }
+  }, [orders, orderBrandFilter])
 
   const handleLogout = async () => {
     await supabase?.auth.signOut()
@@ -601,21 +607,33 @@ export default function AdminDashboardPage() {
         {/* ════════════════════ ORDERS VIEW ════════════════════ */}
         {adminView === 'orders' && (
           <>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-              <div className="flex flex-col items-center gap-1 rounded-2xl bg-white py-7 text-center shadow-sm">
-                <span className="text-2xl">🛒</span>
-                <span className="font-serif text-3xl font-bold text-gray-900">{orderStats.total}</span>
-                <span className="text-xs text-gray-400">Total Orders</span>
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+              <div className="flex flex-col items-center gap-1 rounded-2xl bg-white py-6 text-center shadow-sm">
+                <span className="text-xl">🛒</span>
+                <span className="font-serif text-2xl font-bold text-gray-900">{orderStats.total}</span>
+                <span className="text-[11px] text-gray-400">Total Orders</span>
               </div>
-              <div className="flex flex-col items-center gap-1 rounded-2xl bg-white py-7 text-center shadow-sm">
-                <span className="text-2xl">⏳</span>
-                <span className="font-serif text-3xl font-bold text-amber-600">{orderStats.pending}</span>
-                <span className="text-xs text-gray-400">Pending</span>
+              <div className="flex flex-col items-center gap-1 rounded-2xl bg-white py-6 text-center shadow-sm">
+                <span className="text-xl">⏳</span>
+                <span className="font-serif text-2xl font-bold text-amber-600">{orderStats.pending}</span>
+                <span className="text-[11px] text-gray-400">Pending</span>
               </div>
-              <div className="flex flex-col items-center gap-1 rounded-2xl bg-white py-7 text-center shadow-sm">
-                <span className="text-2xl">💰</span>
-                <span className="font-serif text-3xl font-bold text-green-700">₹{orderStats.revenue.toFixed(0)}</span>
-                <span className="text-xs text-gray-400">Revenue</span>
+              <div className="flex flex-col items-center gap-1 rounded-2xl bg-white py-6 text-center shadow-sm" style={{ border: '1.5px solid #dcfce7' }}>
+                <span className="text-xl">✅</span>
+                <span className="font-serif text-2xl font-bold text-green-700">{orderStats.paid}</span>
+                <span className="text-[11px] text-gray-400">Paid</span>
+                <span className="text-[10px] font-semibold text-green-600">₹{orderStats.paidRevenue.toFixed(0)}</span>
+              </div>
+              <div className="flex flex-col items-center gap-1 rounded-2xl bg-white py-6 text-center shadow-sm" style={{ border: '1.5px solid #fef3c7' }}>
+                <span className="text-xl">⏳</span>
+                <span className="font-serif text-2xl font-bold text-amber-600">{orderStats.unpaid}</span>
+                <span className="text-[11px] text-gray-400">Unpaid</span>
+                <span className="text-[10px] font-semibold text-amber-600">₹{orderStats.unpaidRevenue.toFixed(0)}</span>
+              </div>
+              <div className="col-span-2 flex flex-col items-center gap-1 rounded-2xl bg-white py-6 text-center shadow-sm sm:col-span-1 lg:col-span-1">
+                <span className="text-xl">💰</span>
+                <span className="font-serif text-2xl font-bold text-green-700">₹{orderStats.revenue.toFixed(0)}</span>
+                <span className="text-[11px] text-gray-400">Total Revenue</span>
               </div>
             </div>
 
