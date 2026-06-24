@@ -209,29 +209,33 @@ export default function AdminDashboardPage() {
   const isNewCategory = form.category === '__new__'
   const resolvedCategory = isNewCategory ? form.newCategory.trim() : form.category
 
+  const realProducts = useMemo(() => products.filter(p => p.category !== 'Customer Review'), [products])
+  const reviewItems = useMemo(() => products.filter(p => p.category === 'Customer Review'), [products])
+
   const stats = useMemo(() => {
-    const total = products.length
-    const inStock = products.filter(p => p.in_stock).length
+    const total = realProducts.length
+    const inStock = realProducts.filter(p => p.in_stock).length
     const outOfStock = total - inStock
-    const organicsCount = products.filter(p => p.brand === 'organics').length
-    const trendsCount = products.filter(p => p.brand === 'trends').length
+    const organicsCount = realProducts.filter(p => p.brand === 'organics').length
+    const trendsCount = realProducts.filter(p => p.brand === 'trends').length
     return [
       { emoji: '📦', label: 'Total Products', value: total },
       { emoji: '✅', label: 'In Stock', value: inStock },
       { emoji: '⛔', label: 'Out of Stock', value: outOfStock },
       { emoji: '🌿', label: 'Organics', value: organicsCount },
       { emoji: '🦋', label: 'Trends', value: trendsCount },
+      { emoji: '💬', label: 'Testimonials', value: reviewItems.length },
     ]
-  }, [products])
+  }, [realProducts, reviewItems])
 
   const filtered = useMemo(() => {
-    let result = tab === 'all' ? products : products.filter(p => p.brand === tab)
+    let result = tab === 'all' ? realProducts : realProducts.filter(p => p.brand === tab)
     if (productSearch.trim()) {
       const q = productSearch.toLowerCase()
       result = result.filter(p => p.name.toLowerCase().includes(q) || p.category.toLowerCase().includes(q) || p.description.toLowerCase().includes(q))
     }
     return result
-  }, [products, tab, productSearch])
+  }, [realProducts, tab, productSearch])
 
   const ADMIN_PER_PAGE = 10
   const productTotalPages = Math.ceil(filtered.length / ADMIN_PER_PAGE)

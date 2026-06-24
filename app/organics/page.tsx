@@ -47,7 +47,8 @@ export default function OrganicsHome() {
   const { addToCart, count, openCart } = useCartContext()
   const { products } = useProducts('organics')
   const [modalProduct, setModalProduct] = useState<Product | null>(null)
-  const heroImages = products.slice(0, 4).map(p => p.images[0]).filter(Boolean)
+  const displayProducts = products.filter(p => p.category !== 'Customer Review')
+  const heroImages = displayProducts.slice(0, 4).map(p => p.images[0]).filter(Boolean)
   const [valuesRef, valuesVisible] = useReveal()
 
   return (
@@ -115,7 +116,7 @@ export default function OrganicsHome() {
           <h2 className="mt-2 font-serif text-4xl font-semibold text-gray-900">Our Bestsellers</h2>
         </div>
         <div className="grid grid-cols-2 gap-3 md:gap-6 lg:grid-cols-4">
-          {products.filter(p => p.category !== 'Customer Review').map((product, i) => (
+          {displayProducts.map((product, i) => (
             <ProductCard
               key={product.id}
               product={product}
@@ -132,7 +133,7 @@ export default function OrganicsHome() {
       <CustomerReviews brand="organics" accent={ACCENT} products={products} />
 
       {/* Owner Testimonials Scroll */}
-      <CustomerTestimonials brand="organics" accent={ACCENT} products={products} />
+      <CustomerTestimonials brand="organics" products={products} />
 
       <Footer brand="organics" />
 

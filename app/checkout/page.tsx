@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation'
 import { useCartContext } from '@/lib/CartContext'
 
 const WHATSAPP_NUMBER = '919942384380'
-const UPI_ID = 'adithyarajendran27@okaxis'
+const UPI_ID = 'adithyarajendran27@okicici'
 
 interface FormState {
   name: string

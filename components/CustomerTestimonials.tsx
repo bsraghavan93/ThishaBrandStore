@@ -1,21 +1,42 @@
 'use client'
 
 import Image from 'next/image'
-import { useRef } from 'react'
+import { useMemo, useRef } from 'react'
 import { Brand, Product } from '@/lib/types'
 import { useReveal } from '@/hooks/useReveal'
 
-export default function CustomerTestimonials({ brand, accent, products }: { brand: Brand; accent: string; products: Product[] }) {
-  const testimonials = products.filter(p => p.category === 'Customer Review')
+interface TestimonialCard {
+  id: string
+  image: string
+  description: string
+  name: string
+}
+
+export default function CustomerTestimonials({ brand, products }: { brand: Brand; products: Product[] }) {
   const scrollRef = useRef<HTMLDivElement>(null)
   const [headerRef, headerVisible] = useReveal()
 
-  if (testimonials.length === 0) return null
+  const cards = useMemo(() => {
+    const result: TestimonialCard[] = []
+    products
+      .filter(p => p.category === 'Customer Review')
+      .forEach(p => {
+        if (p.images.length === 0) {
+          result.push({ id: p.id, image: '', description: p.description, name: p.name })
+        } else {
+          p.images.forEach((img, i) => {
+            result.push({ id: `${p.id}-${i}`, image: img, description: p.description, name: p.name })
+          })
+        }
+      })
+    return result
+  }, [products])
+
+  if (cards.length === 0) return null
 
   const scroll = (dir: 'left' | 'right') => {
     if (!scrollRef.current) return
-    const amount = 340
-    scrollRef.current.scrollBy({ left: dir === 'left' ? -amount : amount, behavior: 'smooth' })
+    scrollRef.current.scrollBy({ left: dir === 'left' ? -340 : 340, behavior: 'smooth' })
   }
 
   const brandName = brand === 'organics' ? 'Thisha Organics' : 'Thisha Trends'
@@ -46,24 +67,24 @@ export default function CustomerTestimonials({ brand, accent, products }: { bran
           className="scrollbar-hide flex gap-5 overflow-x-auto pb-4"
           style={{ scrollSnapType: 'x mandatory' }}
         >
-          {testimonials.map((item, i) => (
+          {cards.map((card, i) => (
             <div
-              key={item.id}
+              key={card.id}
               className="flex-shrink-0 overflow-hidden rounded-2xl bg-white/10 backdrop-blur-sm"
               style={{ width: '320px', scrollSnapAlign: 'start', animationDelay: `${i * 0.1}s` }}
             >
-              {item.images[0] && (
+              {card.image && (
                 <div className="relative aspect-square overflow-hidden">
-                  <Image src={item.images[0]} alt={item.name} fill unoptimized className="object-cover" sizes="320px" />
+                  <Image src={card.image} alt={card.name} fill unoptimized className="object-cover" sizes="320px" />
                 </div>
               )}
               <div className="p-5">
-                {item.description && (
+                {card.description && (
                   <p className="font-serif text-[15px] italic leading-relaxed text-white/90">
-                    &ldquo;{item.description}&rdquo;
+                    &ldquo;{card.description}&rdquo;
                   </p>
                 )}
-                <p className="mt-3 text-xs uppercase tracking-[2px] text-white/50">— {item.name}</p>
+                <p className="mt-3 text-xs uppercase tracking-[2px] text-white/50">— {card.name}</p>
               </div>
             </div>
           ))}

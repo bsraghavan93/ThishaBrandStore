@@ -56,9 +56,8 @@ export default function TrendsHome() {
   const { addToCart, count, openCart } = useCartContext()
   const { products } = useProducts('trends')
   const [modalProduct, setModalProduct] = useState<Product | null>(null)
-  const heroImages = products.slice(0, 4).map(p => p.images[0]).filter(Boolean)
-
   const displayProducts = products.filter(p => p.category !== 'Customer Review')
+  const heroImages = displayProducts.slice(0, 4).map(p => p.images[0]).filter(Boolean)
 
   const categories = useMemo(() => {
     const catMap = new Map<string, { count: number; image?: string }>()
@@ -173,7 +172,7 @@ export default function TrendsHome() {
       <CustomerReviews brand="trends" accent={ACCENT} products={products} />
 
       {/* Owner Testimonials Scroll */}
-      <CustomerTestimonials brand="trends" accent={ACCENT} products={products} />
+      <CustomerTestimonials brand="trends" products={products} />
 
       <Footer brand="trends" />
       <ProductModal product={modalProduct} accent={ACCENT} onClose={() => setModalProduct(null)} onAdd={addToCart} />
