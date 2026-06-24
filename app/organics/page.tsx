@@ -2,7 +2,7 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import Navbar from '@/components/Navbar'
 import MarqueeBanner from '@/components/MarqueeBanner'
 import Footer from '@/components/Footer'
@@ -16,6 +16,10 @@ import { useCartContext } from '@/lib/CartContext'
 import { Product } from '@/lib/types'
 
 const ACCENT = '#3B5E1F'
+
+function isReviewCategory(cat: string) {
+  return cat.trim().toLowerCase() === 'customer review'
+}
 
 const VALUES = [
   { icon: '🌱', title: '100% Organic' },
@@ -47,8 +51,14 @@ export default function OrganicsHome() {
   const { addToCart, count, openCart } = useCartContext()
   const { products } = useProducts('organics')
   const [modalProduct, setModalProduct] = useState<Product | null>(null)
-  const displayProducts = products.filter(p => p.category !== 'Customer Review')
-  const heroImages = displayProducts.slice(0, 4).map(p => p.images[0]).filter(Boolean)
+  const displayProducts = useMemo(
+    () => products.filter(p => !isReviewCategory(p.category)),
+    [products]
+  )
+  const heroImages = useMemo(
+    () => displayProducts.slice(0, 4).map(p => p.images?.[0]).filter(Boolean),
+    [displayProducts]
+  )
   const [valuesRef, valuesVisible] = useReveal()
 
   return (
@@ -65,7 +75,7 @@ export default function OrganicsHome() {
         <div className="animate-orbFloat pointer-events-none absolute -right-24 bottom-0 h-96 w-96 rounded-full blur-[100px]" style={{ backgroundColor: 'rgba(168,216,122,0.2)', animationDelay: '5s' }} />
 
         <div className="relative z-10 mx-auto grid max-w-7xl grid-cols-1 items-center gap-12 lg:grid-cols-2">
-          <div className="animate-fadeUp">
+          <div>
             <p className="text-sm font-medium tracking-[3px]" style={{ color: '#a8d87a' }}>✦ Pure · Natural · Honest ✦</p>
             <h1 className="mt-4 font-serif text-5xl font-semibold italic leading-tight text-white md:text-6xl">
               Skincare made <span style={{ color: '#a8d87a' }}>honest</span>, <br /> straight from nature
@@ -86,7 +96,7 @@ export default function OrganicsHome() {
             {heroImages.map((src, i) => (
               <div
                 key={i}
-                className="animate-float relative overflow-hidden rounded-2xl transition-transform duration-300 hover:scale-105"
+                className="relative overflow-hidden rounded-2xl transition-transform duration-300 hover:scale-105"
                 style={{
                   aspectRatio: '1 / 1',
                   boxShadow: '0 12px 40px rgba(0,0,0,0.25)',

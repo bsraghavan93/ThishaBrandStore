@@ -18,6 +18,10 @@ import { Product } from '@/lib/types'
 const ACCENT = '#8B1539'
 const CARD_BGS = ['#FFF5F0', '#F5EDE0', '#FDF0F4', '#F0F5FF', '#FFF8E1', '#F0FDF4']
 
+function isReviewCategory(cat: string) {
+  return cat.trim().toLowerCase() === 'customer review'
+}
+
 function CategoryCard({ name, image, count, bg, delay }: { name: string; image?: string; count: number; bg: string; delay: number }) {
   const [ref, visible] = useReveal()
   return (
@@ -56,15 +60,22 @@ export default function TrendsHome() {
   const { addToCart, count, openCart } = useCartContext()
   const { products } = useProducts('trends')
   const [modalProduct, setModalProduct] = useState<Product | null>(null)
-  const displayProducts = products.filter(p => p.category !== 'Customer Review')
-  const heroImages = displayProducts.slice(0, 4).map(p => p.images[0]).filter(Boolean)
+
+  const displayProducts = useMemo(
+    () => products.filter(p => !isReviewCategory(p.category)),
+    [products]
+  )
+  const heroImages = useMemo(
+    () => displayProducts.slice(0, 4).map(p => p.images?.[0]).filter(Boolean),
+    [displayProducts]
+  )
 
   const categories = useMemo(() => {
     const catMap = new Map<string, { count: number; image?: string }>()
     displayProducts.forEach(p => {
       const existing = catMap.get(p.category)
       if (existing) { existing.count++ }
-      else { catMap.set(p.category, { count: 1, image: p.images[0] }) }
+      else { catMap.set(p.category, { count: 1, image: p.images?.[0] }) }
     })
     const result: { name: string; count: number; image?: string }[] = []
     catMap.forEach((val, name) => result.push({ name, ...val }))
@@ -82,11 +93,9 @@ export default function TrendsHome() {
         style={{ background: 'linear-gradient(135deg, #3D0A1B, #6B1230, #8B1539, #C8963E)' }}
       >
         <div className="pointer-events-none absolute inset-0" style={{ background: 'radial-gradient(circle at 70% 50%, rgba(255,255,255,0.18), transparent 60%)' }} />
-        <div className="animate-orbFloat pointer-events-none absolute -left-24 bottom-0 h-96 w-96 rounded-full blur-[100px]" style={{ backgroundColor: 'rgba(255,255,255,0.1)' }} />
-        <div className="animate-orbFloat pointer-events-none absolute -right-20 top-0 h-80 w-80 rounded-full blur-[90px]" style={{ backgroundColor: 'rgba(200,150,62,0.18)', animationDelay: '6s' }} />
 
         <div className="relative z-10 mx-auto grid max-w-7xl grid-cols-1 items-center gap-12 lg:grid-cols-2">
-          <div className="animate-fadeUp">
+          <div>
             <h1 className="font-display text-3xl font-black leading-[1.05] text-white sm:text-5xl md:text-6xl">
               Dress the <br />
               <span className="italic" style={{ color: '#C8963E' }}>Woman</span> <br />
@@ -113,43 +122,46 @@ export default function TrendsHome() {
             </div>
           </div>
 
-          {heroImages.length > 0 && <div className="grid grid-cols-2 gap-4">
-            {heroImages.map((src, i) => (
-              <div
-                key={i}
-                className="animate-float relative overflow-hidden rounded-2xl transition-transform duration-300 hover:scale-105"
-                style={{
-                  aspectRatio: '3 / 4',
-                  boxShadow: '0 12px 40px rgba(0,0,0,0.3)',
-                  animationDelay: `${i * 0.4}s`,
-                }}
-              >
-                <Image src={src} alt="Trends product" fill unoptimized className="object-cover" sizes="(max-width: 1024px) 50vw, 25vw" />
-              </div>
-            ))}
-          </div>}
+          {heroImages.length > 0 && (
+            <div className="grid grid-cols-2 gap-4">
+              {heroImages.map((src, i) => (
+                <div
+                  key={i}
+                  className="relative overflow-hidden rounded-2xl transition-transform duration-300 hover:scale-105"
+                  style={{
+                    aspectRatio: '3 / 4',
+                    boxShadow: '0 12px 40px rgba(0,0,0,0.3)',
+                  }}
+                >
+                  <Image src={src} alt="Trends product" fill unoptimized className="object-cover" sizes="(max-width: 1024px) 50vw, 25vw" />
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
       {/* New arrivals */}
-      <section className="mx-auto max-w-7xl px-4 py-12 md:px-6 md:py-24">
-        <div className="mb-10 text-center">
-          <p className="text-xs font-bold uppercase tracking-[3px]" style={{ color: ACCENT }}>✦ Just Dropped ✦</p>
-          <h2 className="mt-2 font-serif text-4xl font-semibold text-gray-900">New Arrivals</h2>
-        </div>
-        <div className="grid grid-cols-2 gap-3 md:gap-6 lg:grid-cols-4">
-          {displayProducts.map((product, i) => (
-            <ProductCard
-              key={product.id}
-              product={product}
-              accent={ACCENT}
-              onAdd={addToCart}
-              onView={setModalProduct}
-              delay={i * 0.08}
-            />
-          ))}
-        </div>
-      </section>
+      {displayProducts.length > 0 && (
+        <section className="mx-auto max-w-7xl px-4 py-12 md:px-6 md:py-24">
+          <div className="mb-10 text-center">
+            <p className="text-xs font-bold uppercase tracking-[3px]" style={{ color: ACCENT }}>✦ Just Dropped ✦</p>
+            <h2 className="mt-2 font-serif text-4xl font-semibold text-gray-900">New Arrivals</h2>
+          </div>
+          <div className="grid grid-cols-2 gap-3 md:gap-6 lg:grid-cols-4">
+            {displayProducts.map((product, i) => (
+              <ProductCard
+                key={product.id}
+                product={product}
+                accent={ACCENT}
+                onAdd={addToCart}
+                onView={setModalProduct}
+                delay={i * 0.08}
+              />
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Collections teaser */}
       {categories.length > 0 && (
