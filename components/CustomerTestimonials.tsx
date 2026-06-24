@@ -1,7 +1,7 @@
 'use client'
 
 import Image from 'next/image'
-import { useMemo, useRef } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Brand, Product } from '@/lib/types'
 import { useReveal } from '@/hooks/useReveal'
 
@@ -12,25 +12,41 @@ interface TestimonialCard {
   name: string
 }
 
-export default function CustomerTestimonials({ brand, products }: { brand: Brand; products: Product[] }) {
+function normalize(p: Product): Product {
+  return { ...p, images: Array.isArray(p.images) ? p.images : [], category: p.category || '' }
+}
+
+export default function CustomerTestimonials({ brand }: { brand: Brand }) {
   const scrollRef = useRef<HTMLDivElement>(null)
   const [headerRef, headerVisible] = useReveal()
+  const [allProducts, setAllProducts] = useState<Product[]>([])
+
+  useEffect(() => {
+    fetch('/api/products')
+      .then(r => r.json())
+      .then(json => {
+        if (Array.isArray(json.products)) {
+          setAllProducts(json.products.map(normalize).filter((p: Product) => p.category === 'Customer Review'))
+        }
+      })
+      .catch(() => {})
+  }, [])
 
   const cards = useMemo(() => {
     const result: TestimonialCard[] = []
-    products
-      .filter(p => p.category === 'Customer Review')
-      .forEach(p => {
-        if (p.images.length === 0) {
+    allProducts.forEach(p => {
+      if (p.images.length === 0) {
+        if (p.description) {
           result.push({ id: p.id, image: '', description: p.description, name: p.name })
-        } else {
-          p.images.forEach((img, i) => {
-            result.push({ id: `${p.id}-${i}`, image: img, description: p.description, name: p.name })
-          })
         }
-      })
+      } else {
+        p.images.forEach((img, i) => {
+          result.push({ id: `${p.id}-${i}`, image: img, description: p.description, name: p.name })
+        })
+      }
+    })
     return result
-  }, [products])
+  }, [allProducts])
 
   if (cards.length === 0) return null
 
@@ -67,11 +83,11 @@ export default function CustomerTestimonials({ brand, products }: { brand: Brand
           className="scrollbar-hide flex gap-5 overflow-x-auto pb-4"
           style={{ scrollSnapType: 'x mandatory' }}
         >
-          {cards.map((card, i) => (
+          {cards.map((card) => (
             <div
               key={card.id}
-              className="flex-shrink-0 overflow-hidden rounded-2xl bg-white/10 backdrop-blur-sm"
-              style={{ width: '320px', scrollSnapAlign: 'start', animationDelay: `${i * 0.1}s` }}
+              className="flex-shrink-0 overflow-hidden rounded-2xl"
+              style={{ width: '320px', scrollSnapAlign: 'start', backgroundColor: 'rgba(255,255,255,0.12)' }}
             >
               {card.image && (
                 <div className="relative aspect-square overflow-hidden">

@@ -172,7 +172,7 @@ export default function TrendsHome() {
       <CustomerReviews brand="trends" accent={ACCENT} products={products} />
 
       {/* Owner Testimonials Scroll */}
-      <CustomerTestimonials brand="trends" products={products} />
+      <CustomerTestimonials brand="trends" />
 
       <Footer brand="trends" />
       <ProductModal product={modalProduct} accent={ACCENT} onClose={() => setModalProduct(null)} onAdd={addToCart} />

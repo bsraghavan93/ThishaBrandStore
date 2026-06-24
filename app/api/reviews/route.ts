@@ -42,6 +42,7 @@ export async function POST(req: NextRequest) {
     reviewer_name,
     rating,
     comment: comment || '',
+    source: 'customer',
   }).select().single()
 
   if (error) {

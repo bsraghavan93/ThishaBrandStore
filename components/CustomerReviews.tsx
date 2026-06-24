@@ -11,6 +11,7 @@ interface Review {
   reviewer_name: string
   rating: number
   comment: string
+  source: string
   created_at: string
 }
 
@@ -155,7 +156,15 @@ export default function CustomerReviews({ brand, accent, products }: { brand: Br
               const product = products.find(p => p.id === review.product_id)
               return (
                 <div key={review.id} className="rounded-2xl bg-white p-6 shadow-sm transition-transform duration-200 hover:-translate-y-1">
-                  <Stars rating={review.rating} size="sm" />
+                  <div className="flex items-center justify-between">
+                    <Stars rating={review.rating} size="sm" />
+                    <span className="rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide" style={{
+                      backgroundColor: review.source === 'owner' ? '#fef3c7' : '#dbeafe',
+                      color: review.source === 'owner' ? '#92400e' : '#1e40af',
+                    }}>
+                      {review.source === 'owner' ? 'From Owner' : 'Customer'}
+                    </span>
+                  </div>
                   {review.comment && <p className="mt-3 text-sm leading-relaxed text-gray-600">{review.comment}</p>}
                   <div className="mt-4 flex items-center justify-between">
                     <div>

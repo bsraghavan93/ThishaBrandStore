@@ -133,7 +133,7 @@ export default function OrganicsHome() {
       <CustomerReviews brand="organics" accent={ACCENT} products={products} />
 
       {/* Owner Testimonials Scroll */}
-      <CustomerTestimonials brand="organics" products={products} />
+      <CustomerTestimonials brand="organics" />
 
       <Footer brand="organics" />
 
