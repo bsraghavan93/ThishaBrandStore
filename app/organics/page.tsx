@@ -8,6 +8,8 @@ import MarqueeBanner from '@/components/MarqueeBanner'
 import Footer from '@/components/Footer'
 import ProductCard from '@/components/ProductCard'
 import ProductModal from '@/components/ProductModal'
+import CustomerReviews from '@/components/CustomerReviews'
+import CustomerTestimonials from '@/components/CustomerTestimonials'
 import { useReveal } from '@/hooks/useReveal'
 import { useProducts } from '@/hooks/useProducts'
 import { useCartContext } from '@/lib/CartContext'
@@ -47,7 +49,6 @@ export default function OrganicsHome() {
   const [modalProduct, setModalProduct] = useState<Product | null>(null)
   const heroImages = products.slice(0, 4).map(p => p.images[0]).filter(Boolean)
   const [valuesRef, valuesVisible] = useReveal()
-  const [testimonialRef, testimonialVisible] = useReveal()
 
   return (
     <div className="bg-white">
@@ -114,7 +115,7 @@ export default function OrganicsHome() {
           <h2 className="mt-2 font-serif text-4xl font-semibold text-gray-900">Our Bestsellers</h2>
         </div>
         <div className="grid grid-cols-2 gap-3 md:gap-6 lg:grid-cols-4">
-          {products.map((product, i) => (
+          {products.filter(p => p.category !== 'Customer Review').map((product, i) => (
             <ProductCard
               key={product.id}
               product={product}
@@ -127,20 +128,11 @@ export default function OrganicsHome() {
         </div>
       </section>
 
-      {/* Testimonial */}
-      <section
-        ref={testimonialRef}
-        className="px-6 py-24 text-center"
-        style={{ background: 'linear-gradient(135deg, #16280c, #3B5E1F)' }}
-      >
-        <div className={`mx-auto max-w-2xl ${testimonialVisible ? 'animate-fadeUp' : 'opacity-0'}`}>
-          <span className="font-serif text-6xl" style={{ color: '#a8d87a' }}>&ldquo;</span>
-          <p className="font-serif text-[28px] italic leading-snug text-white">
-            My skin has never felt this calm and radiant. Thisha Organics feels like a ritual, not just a routine.
-          </p>
-          <p className="mt-6 text-xs uppercase tracking-[3px] text-white/60">— Aanya R., verified customer</p>
-        </div>
-      </section>
+      {/* Customer Reviews */}
+      <CustomerReviews brand="organics" accent={ACCENT} products={products} />
+
+      {/* Owner Testimonials Scroll */}
+      <CustomerTestimonials brand="organics" accent={ACCENT} products={products} />
 
       <Footer brand="organics" />
 

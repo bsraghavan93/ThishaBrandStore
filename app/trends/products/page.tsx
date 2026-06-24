@@ -26,7 +26,8 @@ export default function TrendsProductsPage() {
 
 function TrendsProductsContent() {
   const { addToCart, count, openCart } = useCartContext()
-  const { products } = useProducts('trends')
+  const { products: allProducts } = useProducts('trends')
+  const products = useMemo(() => allProducts.filter(p => p.category !== 'Customer Review'), [allProducts])
   const [modalProduct, setModalProduct] = useState<Product | null>(null)
   const searchParams = useSearchParams()
   const initialCategory = searchParams.get('category') || 'All'

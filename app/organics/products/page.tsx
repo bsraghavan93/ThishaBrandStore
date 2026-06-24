@@ -26,7 +26,8 @@ export default function OrganicsProductsPage() {
 
 function OrganicsProductsContent() {
   const { addToCart, count, openCart } = useCartContext()
-  const { products } = useProducts('organics')
+  const { products: allProducts } = useProducts('organics')
+  const products = useMemo(() => allProducts.filter(p => p.category !== 'Customer Review'), [allProducts])
   const [modalProduct, setModalProduct] = useState<Product | null>(null)
   const searchParams = useSearchParams()
   const initialCategory = searchParams.get('category') || 'All'

@@ -305,7 +305,7 @@ export default function AdminDashboardPage() {
   }
 
   const buildPayload = () => {
-    const base: Record<string, unknown> = { name: form.name, price: parseFloat(form.price), category: resolvedCategory, brand: form.brand, description: form.description }
+    const base: Record<string, unknown> = { name: form.name, price: parseFloat(form.price) || 0, category: resolvedCategory, brand: form.brand, description: form.description }
     if (form.brand === 'trends') {
       base.colors = colors; base.sizes = sizes; base.material = form.material || null; base.fit_type = form.fit_type || null; base.care_instructions = form.care_instructions || null
       base.ingredients = null; base.volume = null; base.skin_type = null; base.usage_instructions = null
@@ -318,8 +318,10 @@ export default function AdminDashboardPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!form.name || !form.price || !resolvedCategory) { setFormError('Name, price, and category are required'); return }
-    if (existingImages.length === 0 && imageFiles.length === 0) { setFormError('At least one image is required'); return }
+    const isReviewCategory = resolvedCategory === 'Customer Review'
+    if (!form.name || !resolvedCategory) { setFormError('Name and category are required'); return }
+    if (!isReviewCategory && !form.price) { setFormError('Price is required'); return }
+    if (!isReviewCategory && existingImages.length === 0 && imageFiles.length === 0) { setFormError('At least one image is required'); return }
     setSaving(true); setFormError('')
     try {
       const newUrls = await uploadImages(imageFiles)
@@ -536,8 +538,10 @@ export default function AdminDashboardPage() {
               <form onSubmit={handleSubmit} className="animate-fadeUp mt-6 rounded-2xl bg-white p-6 shadow-sm">
                 <h3 className="mb-4 font-serif text-lg font-bold text-gray-900">{formMode === 'add' ? 'Add New Product' : 'Edit Product'}</h3>
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                  <label className="flex flex-col gap-1.5"><span className="text-xs font-medium text-gray-600">Name</span><input required value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} className="dash-input" /></label>
-                  <label className="flex flex-col gap-1.5"><span className="text-xs font-medium text-gray-600">Price (₹)</span><input required type="number" step="0.01" value={form.price} onChange={e => setForm(f => ({ ...f, price: e.target.value }))} className="dash-input" /></label>
+                  <label className="flex flex-col gap-1.5"><span className="text-xs font-medium text-gray-600">{resolvedCategory === 'Customer Review' ? 'Customer Name' : 'Name'}</span><input required value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} className="dash-input" placeholder={resolvedCategory === 'Customer Review' ? 'e.g. Aanya R.' : ''} /></label>
+                  {resolvedCategory !== 'Customer Review' && (
+                    <label className="flex flex-col gap-1.5"><span className="text-xs font-medium text-gray-600">Price (₹)</span><input required type="number" step="0.01" value={form.price} onChange={e => setForm(f => ({ ...f, price: e.target.value }))} className="dash-input" /></label>
+                  )}
                   <label className="flex flex-col gap-1.5"><span className="text-xs font-medium text-gray-600">Brand</span>
                     <select value={form.brand} onChange={e => setForm(f => ({ ...f, brand: e.target.value as Brand, category: '', newCategory: '' }))} className="dash-input">
                       <option value="organics">Organics</option><option value="trends">Trends</option>
@@ -547,6 +551,7 @@ export default function AdminDashboardPage() {
                     <select value={form.category} onChange={e => setForm(f => ({ ...f, category: e.target.value, newCategory: '' }))} className="dash-input">
                       <option value="">Select category…</option>
                       {currentCategories.map(cat => (<option key={cat} value={cat}>{cat}</option>))}
+                      <option value="Customer Review">Customer Review</option>
                       <option value="__new__">+ Create new category…</option>
                     </select>
                   </label>
@@ -555,12 +560,17 @@ export default function AdminDashboardPage() {
                       <input required value={form.newCategory} onChange={e => setForm(f => ({ ...f, newCategory: e.target.value }))} className="dash-input" placeholder="e.g. Serums, Dresses, Eye Care…" autoFocus />
                     </label>
                   )}
-                  <label className="flex flex-col gap-1.5 sm:col-span-2"><span className="text-xs font-medium text-gray-600">Description</span>
-                    <textarea rows={3} value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} className="dash-input resize-none" />
+                  {resolvedCategory === 'Customer Review' && (
+                    <div className="sm:col-span-2 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs text-amber-700">
+                      <strong>Customer Review mode:</strong> Add a customer photo and their testimonial below. These will appear in the &ldquo;What Customers Say&rdquo; horizontal scroll on the storefront. Price and variant fields are not required.
+                    </div>
+                  )}
+                  <label className="flex flex-col gap-1.5 sm:col-span-2"><span className="text-xs font-medium text-gray-600">{resolvedCategory === 'Customer Review' ? 'Customer Testimonial' : 'Description'}</span>
+                    <textarea rows={3} value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} className="dash-input resize-none" placeholder={resolvedCategory === 'Customer Review' ? 'What did the customer say about the product/brand?' : ''} />
                   </label>
                 </div>
 
-                {form.brand === 'trends' ? (
+                {resolvedCategory !== 'Customer Review' && (form.brand === 'trends' ? (
                   <div className="mt-6 rounded-xl border border-pink-100 bg-pink-50/30 p-5">
                     <h4 className="mb-4 text-sm font-bold uppercase tracking-wider" style={{ color: '#8B1539' }}>Clothing Details</h4>
                     <div className="mb-4">
@@ -617,10 +627,10 @@ export default function AdminDashboardPage() {
                       <textarea rows={2} value={form.usage_instructions} onChange={e => setForm(f => ({ ...f, usage_instructions: e.target.value }))} className="dash-input resize-none" placeholder="e.g. Apply 2-3 drops to clean skin morning and night" />
                     </label>
                   </div>
-                )}
+                ))}
 
                 <div className="mt-6 flex flex-col gap-3">
-                  <span className="text-xs font-medium text-gray-600">Product Images</span>
+                  <span className="text-xs font-medium text-gray-600">{resolvedCategory === 'Customer Review' ? 'Customer Photo (optional)' : 'Product Images'}</span>
                   {(existingImages.length > 0 || imageFiles.length > 0) && (
                     <div className="flex flex-wrap gap-3">
                       {existingImages.map((url, i) => (

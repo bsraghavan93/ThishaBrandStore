@@ -8,6 +8,8 @@ import MarqueeBanner from '@/components/MarqueeBanner'
 import Footer from '@/components/Footer'
 import ProductCard from '@/components/ProductCard'
 import ProductModal from '@/components/ProductModal'
+import CustomerReviews from '@/components/CustomerReviews'
+import CustomerTestimonials from '@/components/CustomerTestimonials'
 import { useReveal } from '@/hooks/useReveal'
 import { useProducts } from '@/hooks/useProducts'
 import { useCartContext } from '@/lib/CartContext'
@@ -56,9 +58,11 @@ export default function TrendsHome() {
   const [modalProduct, setModalProduct] = useState<Product | null>(null)
   const heroImages = products.slice(0, 4).map(p => p.images[0]).filter(Boolean)
 
+  const displayProducts = products.filter(p => p.category !== 'Customer Review')
+
   const categories = useMemo(() => {
     const catMap = new Map<string, { count: number; image?: string }>()
-    products.forEach(p => {
+    displayProducts.forEach(p => {
       const existing = catMap.get(p.category)
       if (existing) { existing.count++ }
       else { catMap.set(p.category, { count: 1, image: p.images[0] }) }
@@ -66,7 +70,7 @@ export default function TrendsHome() {
     const result: { name: string; count: number; image?: string }[] = []
     catMap.forEach((val, name) => result.push({ name, ...val }))
     return result
-  }, [products])
+  }, [displayProducts])
 
   return (
     <div className="bg-white">
@@ -135,7 +139,7 @@ export default function TrendsHome() {
           <h2 className="mt-2 font-serif text-4xl font-semibold text-gray-900">New Arrivals</h2>
         </div>
         <div className="grid grid-cols-2 gap-3 md:gap-6 lg:grid-cols-4">
-          {products.map((product, i) => (
+          {displayProducts.map((product, i) => (
             <ProductCard
               key={product.id}
               product={product}
@@ -164,6 +168,12 @@ export default function TrendsHome() {
           </div>
         </section>
       )}
+
+      {/* Customer Reviews */}
+      <CustomerReviews brand="trends" accent={ACCENT} products={products} />
+
+      {/* Owner Testimonials Scroll */}
+      <CustomerTestimonials brand="trends" accent={ACCENT} products={products} />
 
       <Footer brand="trends" />
       <ProductModal product={modalProduct} accent={ACCENT} onClose={() => setModalProduct(null)} onAdd={addToCart} />
