@@ -1,6 +1,5 @@
 'use client'
 
-import Image from 'next/image'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Brand, Product } from '@/lib/types'
 import { useReveal } from '@/hooks/useReveal'
@@ -62,7 +61,7 @@ export default function CustomerTestimonials({ brand }: { brand: Brand }) {
       className="px-4 py-12 md:px-6 md:py-20"
       style={{ background: brand === 'organics' ? 'linear-gradient(135deg, #16280c, #3B5E1F)' : 'linear-gradient(135deg, #3D0A1B, #6B1230)' }}
     >
-      <div ref={headerRef} className={`mx-auto max-w-7xl ${headerVisible ? 'animate-fadeUp' : 'opacity-0'}`}>
+      <div ref={headerRef} className="mx-auto max-w-7xl">
         <div className="mb-8 flex items-end justify-between">
           <div>
             <p className="text-xs font-bold uppercase tracking-[3px]" style={{ color: brand === 'organics' ? '#a8d87a' : '#C8963E' }}>
@@ -90,8 +89,8 @@ export default function CustomerTestimonials({ brand }: { brand: Brand }) {
               style={{ width: '320px', scrollSnapAlign: 'start', backgroundColor: 'rgba(255,255,255,0.12)' }}
             >
               {card.image && (
-                <div className="relative aspect-square overflow-hidden">
-                  <Image src={card.image} alt={card.name} fill unoptimized className="object-cover" sizes="320px" />
+                <div className="aspect-square overflow-hidden">
+                  <img src={card.image} alt={card.name} className="h-full w-full object-cover" />
                 </div>
               )}
               <div className="p-5">
