@@ -161,7 +161,7 @@ export default function AdminDashboardPage() {
       try {
         const res = await fetch('/api/products')
         const json = await res.json()
-        if (!cancelled) setProducts(json.products ?? [])
+        if (!cancelled) setProducts((json.products ?? []).map((p: Product) => ({ ...p, images: Array.isArray(p.images) ? p.images : [], category: p.category || '' })))
       } catch {
         if (!cancelled) setProducts([])
       } finally {
@@ -500,12 +500,12 @@ export default function AdminDashboardPage() {
         {/* ════════════════════ PRODUCTS VIEW ════════════════════ */}
         {adminView === 'products' && (
           <>
-            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+            <div className="grid grid-cols-3 gap-4 lg:grid-cols-6">
               {stats.map(stat => (
-                <div key={stat.label} className="flex flex-col items-center gap-1 rounded-2xl bg-white py-7 text-center shadow-sm transition-transform duration-200 hover:-translate-y-1">
-                  <span className="text-2xl">{stat.emoji}</span>
-                  <span className="font-serif text-3xl font-bold text-gray-900">{stat.value}</span>
-                  <span className="text-xs text-gray-400">{stat.label}</span>
+                <div key={stat.label} className="flex flex-col items-center gap-1 rounded-2xl bg-white py-5 text-center shadow-sm transition-transform duration-200 hover:-translate-y-1">
+                  <span className="text-xl">{stat.emoji}</span>
+                  <span className="font-serif text-2xl font-bold text-gray-900">{stat.value}</span>
+                  <span className="text-[11px] text-gray-400">{stat.label}</span>
                 </div>
               ))}
             </div>
