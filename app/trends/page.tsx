@@ -6,7 +6,7 @@ import { useMemo, useState } from 'react'
 import Navbar from '@/components/Navbar'
 import MarqueeBanner from '@/components/MarqueeBanner'
 import Footer from '@/components/Footer'
-import AnimatedCafeHero from '@/components/AnimatedCafeHero'
+import HeroVideo from '@/components/HeroVideo'
 import ProductCard from '@/components/ProductCard'
 import ProductModal from '@/components/ProductModal'
 import CustomerReviews from '@/components/CustomerReviews'
@@ -86,13 +86,13 @@ export default function TrendsHome() {
 
       {/* Hero */}
       <section
-        className="relative overflow-hidden px-4 py-14 md:px-6 md:py-24"
+        className="relative overflow-hidden px-4 pt-14 md:px-6 md:pt-24 lg:flex lg:min-h-[580px] lg:items-center lg:py-24"
         style={{ background: 'linear-gradient(135deg, #3D0A1B, #6B1230, #8B1539, #C8963E)' }}
       >
         <div className="pointer-events-none absolute inset-0" style={{ background: 'radial-gradient(circle at 70% 50%, rgba(255,255,255,0.18), transparent 60%)' }} />
 
-        <div className="relative z-10 mx-auto grid max-w-7xl grid-cols-1 items-center gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:gap-6">
-          <div>
+        <div className="relative z-10 mx-auto w-full max-w-7xl">
+          <div className="lg:max-w-[46%]">
             <h1 className="font-display text-3xl font-black leading-[1.05] text-white sm:text-5xl md:text-6xl">
               Dress the <br />
               <span className="italic" style={{ color: '#C8963E' }}>Woman</span> <br />
@@ -119,8 +119,14 @@ export default function TrendsHome() {
             </div>
           </div>
 
-          <AnimatedCafeHero />
         </div>
+
+        {/* Video: below the text on mobile, right-hand backdrop on desktop. Edges fade into the gradient. */}
+        <HeroVideo
+          src="/trends-hero/hero-banner.mp4"
+          className="relative z-0 -mx-4 mt-8 aspect-video md:-mx-6 lg:absolute lg:inset-y-0 lg:right-0 lg:mx-0 lg:mt-0 lg:aspect-auto lg:w-[66%]"
+          mask="linear-gradient(to right, transparent 0%, #000 28%, #000 100%), linear-gradient(to bottom, transparent 0%, #000 14%, #000 100%)"
+        />
       </section>
 
       {/* New arrivals */}
