@@ -83,3 +83,58 @@ body {
     transform: scale(0.97);
   }
 }
+
+/* ── Trends café hero (components/AnimatedCafeHero.tsx) ───────────────── */
+.cafe-hero {
+  /* Tuning knobs */
+  --cafe-scale: 1;               /* artwork size */
+  --cafe-offset-x: 0px;          /* nudge artwork horizontally */
+  --cafe-offset-y: 0px;          /* nudge artwork vertically */
+  --cafe-float-duration: 7s;     /* body float loop */
+  --cafe-steam-duration: 6s;     /* steam loop */
+  position: relative;
+  width: 100%;
+  animation: cafeEnter 1s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.cafe-hero__mask {
+  transform: translate(var(--cafe-offset-x), var(--cafe-offset-y)) scale(var(--cafe-scale));
+  transform-origin: 60% 55%;
+}
+.cafe-hero__float {
+  animation: cafeFloat var(--cafe-float-duration) ease-in-out infinite;
+  will-change: transform;
+}
+.cafe-hero__parallax {
+  position: relative;
+  width: 100%;
+  transition: transform 0.4s ease-out;
+  will-change: transform;
+}
+.cafe-hero__steam {
+  position: absolute;
+  left: 60%;
+  bottom: 20%;
+  width: 7.5%;
+  aspect-ratio: 160 / 220;
+  margin-left: -3.75%;
+  background: url('/trends-hero/coffee-steam.svg') center / contain no-repeat;
+  opacity: 0;
+  pointer-events: none;
+  animation: cafeSteam var(--cafe-steam-duration) ease-in-out infinite;
+}
+.cafe-hero__steam--b { animation-delay: calc(var(--cafe-steam-duration) / -2); margin-left: -2%; }
+
+@keyframes cafeEnter { from { opacity: 0; transform: translateX(40px); } to { opacity: 1; transform: translateX(0); } }
+@keyframes cafeFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+@keyframes cafeSteam {
+  0%   { opacity: 0;   transform: translate(0, 0) scale(0.9); }
+  20%  { opacity: 0.8; }
+  60%  { opacity: 0.45; transform: translate(6px, -14px) scale(1); }
+  100% { opacity: 0;   transform: translate(-4px, -26px) scale(1.08); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cafe-hero, .cafe-hero__float, .cafe-hero__steam { animation: none; }
+  .cafe-hero__steam { display: none; }
+  .cafe-hero__parallax { transition: none; }
+}

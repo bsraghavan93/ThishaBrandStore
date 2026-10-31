@@ -6,6 +6,7 @@ import { useMemo, useState } from 'react'
 import Navbar from '@/components/Navbar'
 import MarqueeBanner from '@/components/MarqueeBanner'
 import Footer from '@/components/Footer'
+import AnimatedCafeHero from '@/components/AnimatedCafeHero'
 import ProductCard from '@/components/ProductCard'
 import ProductModal from '@/components/ProductModal'
 import CustomerReviews from '@/components/CustomerReviews'
@@ -65,10 +66,6 @@ export default function TrendsHome() {
     () => products.filter(p => !isReviewCategory(p.category)),
     [products]
   )
-  const heroImages = useMemo(
-    () => displayProducts.slice(0, 4).map(p => p.images?.[0]).filter(Boolean),
-    [displayProducts]
-  )
 
   const categories = useMemo(() => {
     const catMap = new Map<string, { count: number; image?: string }>()
@@ -94,7 +91,7 @@ export default function TrendsHome() {
       >
         <div className="pointer-events-none absolute inset-0" style={{ background: 'radial-gradient(circle at 70% 50%, rgba(255,255,255,0.18), transparent 60%)' }} />
 
-        <div className="relative z-10 mx-auto grid max-w-7xl grid-cols-1 items-center gap-12 lg:grid-cols-2">
+        <div className="relative z-10 mx-auto grid max-w-7xl grid-cols-1 items-center gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:gap-6">
           <div>
             <h1 className="font-display text-3xl font-black leading-[1.05] text-white sm:text-5xl md:text-6xl">
               Dress the <br />
@@ -122,22 +119,7 @@ export default function TrendsHome() {
             </div>
           </div>
 
-          {heroImages.length > 0 && (
-            <div className="grid grid-cols-2 gap-4">
-              {heroImages.map((src, i) => (
-                <div
-                  key={i}
-                  className="relative overflow-hidden rounded-2xl transition-transform duration-300 hover:scale-105"
-                  style={{
-                    aspectRatio: '3 / 4',
-                    boxShadow: '0 12px 40px rgba(0,0,0,0.3)',
-                  }}
-                >
-                  <Image src={src} alt="Trends product" fill unoptimized className="object-cover" sizes="(max-width: 1024px) 50vw, 25vw" />
-                </div>
-              ))}
-            </div>
-          )}
+          <AnimatedCafeHero />
         </div>
       </section>
 
