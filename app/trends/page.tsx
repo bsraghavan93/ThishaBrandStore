@@ -86,32 +86,32 @@ export default function TrendsHome() {
 
       {/* Hero */}
       <section
-        className="relative overflow-hidden px-4 pt-14 md:px-6 md:pt-24 lg:p-0"
+        className="relative flex min-h-[440px] items-center overflow-hidden px-4 py-10 sm:min-h-[520px] md:px-6 lg:block lg:min-h-0 lg:p-0"
         style={{ background: 'linear-gradient(135deg, #3D0A1B, #6B1230, #8B1539, #C8963E)' }}
       >
         <div className="pointer-events-none absolute inset-0" style={{ background: 'radial-gradient(circle at 70% 50%, rgba(255,255,255,0.18), transparent 60%)' }} />
 
         <div className="relative z-10 mx-auto w-full max-w-7xl lg:absolute lg:inset-0 lg:flex lg:items-center lg:px-6">
-          <div className="lg:max-w-[46%]">
-            <h1 className="font-display text-3xl font-black leading-[1.05] text-white sm:text-5xl md:text-6xl">
+          <div className="max-w-[56%] sm:max-w-[50%] lg:max-w-[46%]">
+            <h1 className="font-display text-[28px] font-black leading-[1.05] text-white sm:text-5xl md:text-6xl">
               Dress the <br />
               <span className="italic" style={{ color: '#C8963E' }}>Woman</span> <br />
               You Are
             </h1>
-            <p className="mt-5 max-w-md text-[15px] leading-relaxed text-white/80">
+            <p className="mt-3 max-w-md text-xs leading-relaxed text-white/85 sm:mt-5 sm:text-[15px]">
               Bold cuts, modern silhouettes, and pieces that move with you — Thisha Trends is fashion for the woman who knows herself.
             </p>
-            <div className="mt-8 flex flex-wrap gap-4">
+            <div className="mt-5 flex flex-wrap gap-2.5 sm:mt-8 sm:gap-4">
               <Link
                 href="/trends/products"
-                className="rounded-full bg-white px-8 py-3.5 text-sm font-semibold transition-transform hover:-translate-y-0.5"
+                className="rounded-full bg-white px-5 py-3 text-[13px] sm:px-8 sm:py-3.5 sm:text-sm font-semibold transition-transform hover:-translate-y-0.5"
                 style={{ color: ACCENT }}
               >
                 Shop Now →
               </Link>
               <Link
                 href="/trends/collections"
-                className="rounded-full border border-white/50 px-8 py-3.5 text-sm font-semibold text-white backdrop-blur transition-transform hover:-translate-y-0.5"
+                className="rounded-full border border-white/50 px-5 py-3 text-[13px] sm:px-8 sm:py-3.5 sm:text-sm font-semibold text-white backdrop-blur transition-transform hover:-translate-y-0.5"
                 style={{ backgroundColor: 'rgba(255,255,255,0.1)' }}
               >
                 Collections
@@ -121,11 +121,12 @@ export default function TrendsHome() {
 
         </div>
 
-        {/* Video: below the text on mobile; on desktop it sets the hero height (16:9, never cropped) and the text overlays its left side. Edges fade into the gradient. */}
+        {/* Video: full-bleed backdrop with the woman on the right on mobile; on desktop it sets the hero height (16:9, never cropped) and the text overlays its left side. Edges fade into the gradient. */}
         <HeroVideo
           src="/trends-hero/hero-banner.mp4"
-          className="relative z-0 -mx-4 mt-8 aspect-video md:-mx-6 lg:mx-0 lg:ml-auto lg:mt-0 lg:mr-0 lg:w-[64%]"
-          mask="linear-gradient(to right, transparent 0%, #000 28%, #000 100%), linear-gradient(to bottom, transparent 0%, #000 14%, #000 100%)"
+          className="absolute inset-0 z-0 lg:relative lg:inset-auto lg:ml-auto lg:aspect-video lg:w-[64%]"
+          videoClassName="object-right lg:object-center"
+          mask="linear-gradient(to right, transparent 0%, #000 30%, #000 100%), linear-gradient(to bottom, transparent 0%, #000 8%, #000 100%)"
         />
       </section>
 

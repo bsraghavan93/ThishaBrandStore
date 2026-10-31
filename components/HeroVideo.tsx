@@ -5,6 +5,7 @@ import { useEffect, useRef } from 'react'
 interface HeroVideoProps {
   src: string
   className?: string
+  videoClassName?: string
   /** CSS mask that fades the video into the hero background. */
   mask?: string
 }
@@ -13,7 +14,7 @@ interface HeroVideoProps {
  * Muted, looping, inline hero video. Pauses when off-screen, when the tab is
  * hidden, and for visitors who prefer reduced motion (shows the first frame).
  */
-export default function HeroVideo({ src, className = '', mask }: HeroVideoProps) {
+export default function HeroVideo({ src, className = '', videoClassName = '', mask }: HeroVideoProps) {
   const ref = useRef<HTMLVideoElement>(null)
 
   useEffect(() => {
@@ -54,7 +55,7 @@ export default function HeroVideo({ src, className = '', mask }: HeroVideoProps)
         preload="auto"
         aria-hidden="true"
         tabIndex={-1}
-        className="h-full w-full object-cover"
+        className={`h-full w-full object-cover ${videoClassName}`}
       />
     </div>
   )
