@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Brand } from '@/lib/types'
@@ -30,16 +30,11 @@ const TRENDS_LINKS: NavLink[] = [
 ]
 
 export default function Navbar({ brand, cartCount, onCartOpen }: NavbarProps) {
-  const [scrolled, setScrolled] = useState(false)
+  // The header sits above the page content on a white background, so it is always
+  // rendered solid with dark text (white text on transparent was invisible).
+  const scrolled = true
   const [menuOpen, setMenuOpen] = useState(false)
   const { cartBtnRef } = useCartContext()
-
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 30)
-    onScroll()
-    window.addEventListener('scroll', onScroll)
-    return () => window.removeEventListener('scroll', onScroll)
-  }, [])
 
   const accent = brand === 'organics' ? '#3B5E1F' : '#8B1539'
   const links = brand === 'organics' ? ORGANICS_LINKS : TRENDS_LINKS
@@ -51,7 +46,7 @@ export default function Navbar({ brand, cartCount, onCartOpen }: NavbarProps) {
     <header
       className="sticky top-0 z-40 transition-all duration-300"
       style={{
-        backgroundColor: scrolled ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.0)',
+        backgroundColor: 'rgba(255,255,255,0.95)',
         backdropFilter: scrolled ? 'blur(14px)' : 'none',
         boxShadow: scrolled ? '0 4px 24px rgba(0,0,0,0.06)' : 'none',
         borderBottom: scrolled ? '1px solid rgba(0,0,0,0.04)' : '1px solid transparent',
@@ -144,10 +139,11 @@ export default function Navbar({ brand, cartCount, onCartOpen }: NavbarProps) {
 
           {/* Mobile menu toggle */}
           <button
-            className="flex h-9 w-9 items-center justify-center rounded-full md:hidden"
-            style={{ color: scrolled ? '#111' : '#fff' }}
+            className="flex h-11 w-11 items-center justify-center rounded-full text-xl md:hidden"
+            style={{ color: '#111' }}
             onClick={() => setMenuOpen(o => !o)}
             aria-label="Toggle menu"
+            aria-expanded={menuOpen}
           >
             ☰
           </button>

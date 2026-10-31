@@ -31,7 +31,19 @@ export default function ProductCard({ product, accent, onAdd, onView, delay = 0 
       onMouseEnter={e => (e.currentTarget.style.boxShadow = '0 14px 36px rgba(0,0,0,0.14)')}
       onMouseLeave={e => (e.currentTarget.style.boxShadow = '0 4px 20px rgba(0,0,0,0.07)')}
     >
-      <div className="relative">
+      <div
+        className="relative cursor-pointer"
+        role="button"
+        tabIndex={0}
+        aria-label={`View ${product.name}`}
+        onClick={() => onView(product)}
+        onKeyDown={e => {
+          if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) {
+            e.preventDefault()
+            onView(product)
+          }
+        }}
+      >
         <ImageCarousel images={product.images} alt={product.name} />
         {!product.in_stock && (
           <span className="absolute right-3 top-3 z-10 rounded-full bg-black/65 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-white">
