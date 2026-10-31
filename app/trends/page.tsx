@@ -86,12 +86,12 @@ export default function TrendsHome() {
 
       {/* Hero */}
       <section
-        className="relative overflow-hidden px-4 pt-14 md:px-6 md:pt-24 lg:flex lg:min-h-[580px] lg:items-center lg:py-24"
+        className="relative overflow-hidden px-4 pt-14 md:px-6 md:pt-24 lg:p-0"
         style={{ background: 'linear-gradient(135deg, #3D0A1B, #6B1230, #8B1539, #C8963E)' }}
       >
         <div className="pointer-events-none absolute inset-0" style={{ background: 'radial-gradient(circle at 70% 50%, rgba(255,255,255,0.18), transparent 60%)' }} />
 
-        <div className="relative z-10 mx-auto w-full max-w-7xl">
+        <div className="relative z-10 mx-auto w-full max-w-7xl lg:absolute lg:inset-0 lg:flex lg:items-center lg:px-6">
           <div className="lg:max-w-[46%]">
             <h1 className="font-display text-3xl font-black leading-[1.05] text-white sm:text-5xl md:text-6xl">
               Dress the <br />
@@ -121,10 +121,10 @@ export default function TrendsHome() {
 
         </div>
 
-        {/* Video: below the text on mobile, right-hand backdrop on desktop. Edges fade into the gradient. */}
+        {/* Video: below the text on mobile; on desktop it sets the hero height (16:9, never cropped) and the text overlays its left side. Edges fade into the gradient. */}
         <HeroVideo
           src="/trends-hero/hero-banner.mp4"
-          className="relative z-0 -mx-4 mt-8 aspect-video md:-mx-6 lg:absolute lg:inset-y-0 lg:right-0 lg:mx-0 lg:mt-0 lg:aspect-auto lg:w-[66%]"
+          className="relative z-0 -mx-4 mt-8 aspect-video md:-mx-6 lg:mx-0 lg:ml-auto lg:mt-0 lg:mr-0 lg:w-[64%]"
           mask="linear-gradient(to right, transparent 0%, #000 28%, #000 100%), linear-gradient(to bottom, transparent 0%, #000 14%, #000 100%)"
         />
       </section>
